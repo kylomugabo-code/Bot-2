@@ -1,4415 +1,3414 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Deriv Prediction Lab V4 - Adaptive</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deriv Prediction Lab V4.1 — Accuracy Focused</title>
 
 <style>
 :root{
-    --bg:#07111f;
-    --panel:#0d1b2e;
-    --panel2:#10233b;
-    --border:#1e3a5f;
-    --text:#eaf3ff;
-    --muted:#8fa8c4;
-    --green:#25d695;
-    --red:#ff5c6c;
-    --yellow:#ffd166;
-    --blue:#4da3ff;
-    --purple:#a78bfa;
-    --cyan:#22d3ee;
-    --shadow:0 10px 30px rgba(0,0,0,.25);
+  --bg:#050a13;
+  --panel:#0a1728;
+  --panel2:#0d1d31;
+  --line:#1b3552;
+  --text:#eef6ff;
+  --muted:#8da4bd;
+  --blue:#4da3ff;
+  --green:#19d39a;
+  --red:#ff5d6c;
+  --amber:#ffc857
 }
 
 *{
-    box-sizing:border-box;
+  box-sizing:border-box
 }
 
 body{
-    margin:0;
-    font-family:Arial,Helvetica,sans-serif;
-    background:
-        radial-gradient(circle at top right,#102b4a 0,#07111f 40%);
-    color:var(--text);
+  margin:0;
+  background:radial-gradient(circle at 20% 0,#10243d 0,#050a13 42%);
+  color:var(--text);
+  font:14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif
 }
 
-header{
-    padding:20px;
-    border-bottom:1px solid var(--border);
-    background:rgba(7,17,31,.92);
-    position:sticky;
-    top:0;
-    z-index:20;
-    backdrop-filter:blur(10px);
+.wrap{
+  max-width:1180px;
+  margin:auto;
+  padding:18px
 }
 
-.header-inner{
-    max-width:1500px;
-    margin:auto;
+.top{
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  align-items:flex-start;
+  flex-wrap:wrap
 }
 
 h1{
-    margin:0 0 5px;
-    font-size:25px;
+  font-size:31px;
+  margin:0 0 5px
 }
 
-.subtitle{
-    color:var(--muted);
-    font-size:13px;
-}
-
-.container{
-    max-width:1500px;
-    margin:auto;
-    padding:18px;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(12,1fr);
-    gap:15px;
-}
-
-.card{
-    background:linear-gradient(180deg,var(--panel),#091728);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:16px;
-    box-shadow:var(--shadow);
-}
-
-.span-12{grid-column:span 12}
-.span-8{grid-column:span 8}
-.span-6{grid-column:span 6}
-.span-4{grid-column:span 4}
-.span-3{grid-column:span 3}
-
-@media(max-width:1000px){
-    .span-8,.span-6,.span-4,.span-3{
-        grid-column:span 12;
-    }
-}
-
-h2{
-    margin:0 0 13px;
-    font-size:17px;
-}
-
-h3{
-    margin:15px 0 8px;
-    font-size:14px;
-}
-
-label{
-    display:block;
-    color:var(--muted);
-    font-size:12px;
-    margin-bottom:5px;
-}
-
-input,select,button{
-    width:100%;
-    border-radius:9px;
-    border:1px solid var(--border);
-    background:#081626;
-    color:var(--text);
-    padding:10px;
-    outline:none;
-}
-
-input:focus,select:focus{
-    border-color:var(--blue);
-}
-
-button{
-    cursor:pointer;
-    font-weight:bold;
-    transition:.15s;
-}
-
-button:hover{
-    transform:translateY(-1px);
-    border-color:var(--blue);
-}
-
-button.primary{
-    background:#12365b;
-    border-color:#1c5d98;
-}
-
-button.green{
-    background:#0c513d;
-    border-color:#178665;
-}
-
-button.red{
-    background:#551d29;
-    border-color:#8e3040;
-}
-
-button.yellow{
-    background:#51431a;
-    border-color:#8e7523;
-}
-
-button.blue{
-    background:#12385a;
-    border-color:#226ea9;
-}
-
-.controls{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:10px;
-}
-
-@media(max-width:900px){
-    .controls{
-        grid-template-columns:repeat(2,1fr);
-    }
-}
-
-@media(max-width:500px){
-    .controls{
-        grid-template-columns:1fr;
-    }
-}
-
-.control-buttons{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:8px;
-    margin-top:12px;
-}
-
-.status{
-    display:flex;
-    align-items:center;
-    gap:9px;
-    font-weight:bold;
-    font-size:14px;
-}
-
-.dot{
-    width:11px;
-    height:11px;
-    border-radius:50%;
-    background:var(--red);
-    box-shadow:0 0 12px currentColor;
-}
-
-.dot.green{
-    background:var(--green);
-    color:var(--green);
-}
-
-.dot.yellow{
-    background:var(--yellow);
-    color:var(--yellow);
-}
-
-.dot.red{
-    background:var(--red);
-    color:var(--red);
-}
-
-.dot.blue{
-    background:var(--blue);
-    color:var(--blue);
-}
-
-.big{
-    font-size:35px;
-    font-weight:800;
-}
-
-.small{
-    font-size:12px;
-    color:var(--muted);
-}
-
-.stat-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:10px;
-}
-
-@media(max-width:800px){
-    .stat-grid{
-        grid-template-columns:repeat(2,1fr);
-    }
-}
-
-.stat{
-    background:#081729;
-    border:1px solid var(--border);
-    padding:12px;
-    border-radius:10px;
-}
-
-.stat .value{
-    font-size:21px;
-    font-weight:bold;
-    margin-top:4px;
-}
-
-.prediction-box{
-    text-align:center;
-    background:
-        radial-gradient(circle at center,#15395e 0,#0a182a 65%);
-    border:1px solid #24557f;
-    border-radius:14px;
-    padding:20px;
-}
-
-.predicted-digit{
-    font-size:75px;
-    font-weight:900;
-    line-height:1;
-    margin:12px 0;
-}
-
-.signal{
-    display:inline-block;
-    padding:7px 13px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:bold;
-    border:1px solid var(--border);
-}
-
-.signal.valid{
-    color:var(--green);
-    border-color:#168b68;
-    background:#083426;
-}
-
-.signal.none{
-    color:var(--yellow);
-    border-color:#846f1e;
-    background:#302a0e;
-}
-
-.signal.offline{
-    color:var(--red);
-    border-color:#8d3040;
-    background:#35121b;
-}
-
-.probability{
-    margin:7px 0;
-}
-
-.prob-head{
-    display:flex;
-    justify-content:space-between;
-    font-size:12px;
-    margin-bottom:4px;
+.sub{
+  color:var(--muted);
+  font-size:15px
 }
 
 .bar{
-    height:9px;
-    background:#071321;
-    border-radius:20px;
-    overflow:hidden;
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  align-items:center
 }
 
-.bar-fill{
-    height:100%;
-    width:0;
-    background:linear-gradient(90deg,#2879bd,#45d6ff);
-    transition:.25s;
+select,button{
+  background:#0b1b2e;
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px 12px;
+  font-weight:700
 }
 
-.digit-buttons{
-    display:grid;
-    grid-template-columns:repeat(10,1fr);
-    gap:5px;
-    margin-top:12px;
+button{
+  cursor:pointer
 }
 
-.digit-box{
-    text-align:center;
-    padding:7px 2px;
-    border:1px solid var(--border);
-    border-radius:7px;
-    font-size:11px;
-    background:#081728;
+button:hover{
+  border-color:var(--blue)
 }
 
-.digit-box.active{
-    border-color:var(--green);
-    background:#0b3529;
+button.primary{
+  background:#12375d;
+  border-color:#2f76b7
+}
+
+.status{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:9px 12px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  font-weight:800
+}
+
+.dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:var(--red)
+}
+
+.live .dot{
+  background:var(--green);
+  box-shadow:0 0 12px var(--green)
+}
+
+section{
+  background:linear-gradient(180deg,#0b1b2d,#081525);
+  border:1px solid var(--line);
+  border-radius:18px;
+  margin-top:16px;
+  padding:18px;
+  box-shadow:0 12px 40px #0004
+}
+
+h2{
+  margin:0 0 15px;
+  font-size:20px
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px
+}
+
+.card{
+  background:#071528;
+  border:1px solid #183452;
+  border-radius:14px;
+  padding:16px;
+  min-height:104px
+}
+
+.label{
+  color:var(--muted);
+  font-size:13px
+}
+
+.value{
+  font-size:28px;
+  font-weight:850;
+  margin-top:7px
+}
+
+.green{
+  color:var(--green)
+}
+
+.red{
+  color:var(--red)
+}
+
+.amber{
+  color:var(--amber)
+}
+
+.hero{
+  display:grid;
+  grid-template-columns:1.5fr 1fr;
+  gap:14px
+}
+
+.prediction{
+  background:#061322;
+  border:1px solid #20456c;
+  border-radius:15px;
+  padding:18px
+}
+
+.big{
+  font-size:38px;
+  font-weight:900;
+  margin:5px 0
+}
+
+.reason{
+  color:var(--muted);
+  line-height:1.5
+}
+
+.chips{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:10px
+}
+
+.chip{
+  padding:6px 9px;
+  border-radius:8px;
+  background:#0d2239;
+  border:1px solid #1d3b5b;
+  color:#b8cbe0
 }
 
 table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:12px;
+  width:100%;
+  border-collapse:collapse;
+  min-width:720px
 }
 
 th,td{
-    padding:8px 6px;
-    border-bottom:1px solid #17304d;
-    text-align:left;
+  text-align:left;
+  padding:11px 9px;
+  border-bottom:1px solid #15304a
 }
 
 th{
-    color:var(--muted);
-    font-weight:bold;
+  color:#8ea9c4;
+  font-size:12px;
+  text-transform:uppercase
+}
+
+.tablewrap{
+  overflow:auto
 }
 
 .win{
-    color:var(--green);
-    font-weight:bold;
+  color:var(--green);
+  font-weight:800
 }
 
 .loss{
-    color:var(--red);
-    font-weight:bold;
+  color:var(--red);
+  font-weight:800
 }
 
-.pending{
-    color:var(--yellow);
-    font-weight:bold;
+.wait{
+  color:var(--amber);
+  font-weight:800
 }
 
-.neutral{
-    color:var(--muted);
-}
-
-.log{
-    height:220px;
-    overflow:auto;
-    background:#050d17;
-    border:1px solid var(--border);
-    border-radius:9px;
-    padding:10px;
-    font-family:monospace;
-    font-size:11px;
-}
-
-.log-line{
-    padding:3px 0;
-    border-bottom:1px solid rgba(255,255,255,.03);
-}
-
-.good{
-    color:var(--green);
-}
-
-.bad{
-    color:var(--red);
-}
-
-.warn{
-    color:var(--yellow);
-}
-
-.info{
-    color:#8dcaff;
-}
-
-.diagnostic{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:8px;
-}
-
-.diag-item{
-    background:#081728;
-    border:1px solid var(--border);
-    border-radius:9px;
-    padding:10px;
-}
-
-.diag-label{
-    color:var(--muted);
-    font-size:11px;
-}
-
-.diag-value{
-    margin-top:3px;
-    font-size:13px;
-    font-weight:bold;
-}
-
-.explanation{
-    line-height:1.55;
-    font-size:13px;
-    color:#bfd0e4;
-}
-
-.badge{
-    display:inline-block;
-    font-size:10px;
-    padding:4px 7px;
-    border-radius:5px;
-    background:#102944;
-    border:1px solid var(--border);
-    margin:2px;
-}
-
-hr{
-    border:0;
-    border-top:1px solid var(--border);
-    margin:15px 0;
-}
-
-.footer{
-    text-align:center;
-    color:var(--muted);
-    font-size:11px;
-    padding:30px 10px;
-}
-
-.toggle-row{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin-top:10px;
-}
-
-.toggle-row input{
-    width:auto;
-}
-
-progress{
-    width:100%;
-}
-
-.alert{
-    position:fixed;
-    right:15px;
-    bottom:15px;
-    max-width:360px;
-    padding:14px;
-    border-radius:12px;
-    background:#10243a;
-    border:1px solid #2d557d;
-    box-shadow:var(--shadow);
-    display:none;
-    z-index:50;
-}
-
-.alert.show{
-    display:block;
-}
-
-.kpi-positive{
-    color:var(--green);
-}
-
-.kpi-negative{
-    color:var(--red);
-}
-
-.kpi-neutral{
-    color:var(--yellow);
+.small{
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.5
 }
 
 .mono{
-    font-family:monospace;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace
 }
 
-.nowrap{
-    white-space:nowrap;
+.progress{
+  height:9px;
+  background:#102237;
+  border-radius:99px;
+  overflow:hidden;
+  margin-top:10px
 }
 
-.warning-box{
-    padding:10px;
-    border-radius:9px;
-    background:#30250b;
-    border:1px solid #6c5817;
-    color:#f4d77c;
-    font-size:12px;
-    line-height:1.5;
+.progress>i{
+  display:block;
+  height:100%;
+  background:var(--blue);
+  width:0
+}
+
+.kv{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px
+}
+
+.kv div{
+  background:#08192b;
+  border:1px solid #17334f;
+  border-radius:12px;
+  padding:12px
+}
+
+.kv b{
+  display:block;
+  font-size:20px;
+  margin-top:4px
+}
+
+.notice{
+  padding:12px;
+  border-radius:12px;
+  background:#0b1d31;
+  border:1px solid #1d3c5b;
+  color:#b9cce0;
+  line-height:1.5
+}
+
+footer{
+  color:#718ba6;
+  text-align:center;
+  padding:22px 5px
+}
+
+@media(max-width:850px){
+  .grid{
+    grid-template-columns:repeat(2,1fr)
+  }
+
+  .hero{
+    grid-template-columns:1fr
+  }
+
+  .kv{
+    grid-template-columns:1fr 1fr
+  }
+}
+
+@media(max-width:520px){
+  .wrap{
+    padding:10px
+  }
+
+  h1{
+    font-size:25px
+  }
+
+  .grid{
+    grid-template-columns:1fr 1fr
+  }
+
+  .card{
+    padding:13px;
+    min-height:95px
+  }
+
+  .value{
+    font-size:23px
+  }
+
+  .bar{
+    width:100%
+  }
+
+  .bar>*{
+    flex:1
+  }
 }
 </style>
 </head>
 
 <body>
 
-<header>
-    <div class="header-inner">
-        <h1>Deriv Prediction Lab V4 — Adaptive</h1>
-        <div class="subtitle">
-            Real-tick research dashboard • walk-forward validation • calibrated ensemble • no fabricated data
-        </div>
-    </div>
+<div class="wrap">
+
+<header class="top">
+
+<div>
+<h1>Deriv Prediction Lab V4.1 — Accuracy Focused</h1>
+
+<div class="sub">
+Real-tick research dashboard • walk-forward validation • calibrated ensemble • no fabricated data
+</div>
+</div>
+
+<div class="bar">
+
+<select id="symbol"></select>
+
+<select id="objective">
+<option value="DIFFERS">DIFFERS</option>
+<option value="MATCHES">MATCHES</option>
+</select>
+
+<button id="connect" class="primary">
+Connect
+</button>
+
+<span id="status" class="status">
+<i class="dot"></i>
+<span>DATA OFFLINE</span>
+</span>
+
+</div>
+
 </header>
 
-<div class="container">
+
+<section>
+
+<div class="notice">
+
+<b>Accuracy gate:</b>
+
+The engine does not force a prediction.
+
+It may return
+
+<b>WAIT / INSUFFICIENT EDGE</b>
+
+when the live data does not provide enough evidence.
+
+Every win/loss below is resolved only against a later real Deriv tick.
+
+</div>
+
+</section>
+
+
+<section>
+
+<h2>Current Analysis</h2>
+
+<div class="hero">
+
+<div class="prediction">
+
+<div class="label">
+NEXT-TICK DECISION
+</div>
+
+<div id="decision" class="big">
+WAIT
+</div>
+
+<div id="confidence" class="value">
+—
+</div>
+
+<div id="reason" class="reason">
+Waiting for enough verified live ticks.
+</div>
+
+<div id="chips" class="chips"></div>
+
+</div>
+
+
+<div class="prediction">
+
+<div class="label">
+DATA QUALITY
+</div>
+
+<div class="kv" style="margin-top:10px">
+
+<div>
+<span class="label">Ticks cached</span>
+<b id="tickCount">0</b>
+</div>
+
+<div>
+<span class="label">Last digit</span>
+<b id="lastDigit">—</b>
+</div>
+
+<div>
+<span class="label">Tick age</span>
+<b id="tickAge">—</b>
+</div>
+
+</div>
+
+<div class="small" style="margin-top:14px">
+
+The engine requires real tick data.
+
+If the stream stops, new predictions stop too.
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section>
+
+<h2>Verified Learning Performance</h2>
 
 <div class="grid">
 
-<!-- SETTINGS -->
-<div class="card span-12">
-    <h2>⚙ Configuration</h2>
-
-    <div class="controls">
-
-        <div>
-            <label>Deriv App ID</label>
-            <input id="appId" value="1089">
-        </div>
-
-        <div>
-            <label>Market</label>
-            <select id="symbol">
-                <option value="R_10">Volatility 10 Index</option>
-                <option value="R_25">Volatility 25 Index</option>
-                <option value="R_50" selected>Volatility 50 Index</option>
-                <option value="R_75">Volatility 75 Index</option>
-                <option value="R_100">Volatility 100 Index</option>
-                <option value="1HZ10V">Volatility 10 (1s)</option>
-                <option value="1HZ25V">Volatility 25 (1s)</option>
-                <option value="1HZ50V">Volatility 50 (1s)</option>
-                <option value="1HZ75V">Volatility 75 (1s)</option>
-                <option value="1HZ100V">Volatility 100 (1s)</option>
-            </select>
-        </div>
-
-        <div>
-            <label>History ticks</label>
-            <input id="historyCount" type="number" value="1000" min="100" max="10000">
-        </div>
-
-        <div>
-            <label>Maximum saved digits</label>
-            <input id="maxSaved" type="number" value="50000" min="1000" max="200000">
-        </div>
-
-        <div>
-            <label>Smoothing</label>
-            <input id="smoothing" type="number" value="1" min="0.01" step="0.1">
-        </div>
-
-        <div>
-            <label>2-digit model weight</label>
-            <input id="weight2" type="number" value="50" min="0" max="100">
-        </div>
-
-        <div>
-            <label>3-digit model weight</label>
-            <input id="weight3" type="number" value="35" min="0" max="100">
-        </div>
-
-        <div>
-            <label>1-digit model weight</label>
-            <input id="weight1" type="number" value="30" min="0" max="100">
-        </div>
-
-        <div>
-            <label>Model window</label>
-            <input id="modelWindow" type="number" value="2000" min="100" max="20000">
-        </div>
-
-        <div>
-            <label>Accuracy window</label>
-            <input id="accuracyWindow" type="number" value="100" min="20" max="1000">
-        </div>
-
-        <div>
-            <label>Learning rate</label>
-            <input id="learningRate" type="number" value="0.05" min="0.001" max="0.5" step="0.001">
-        </div>
-
-        <div>
-            <label>Minimum signal confidence %</label>
-            <input id="minConfidence" type="number" value="16" min="10" max="95" step="0.5">
-        </div>
-
-        <div>
-            <label>Minimum edge %</label>
-            <input id="edgeThreshold" type="number" value="0.5" min="0" max="50" step="0.1">
-        </div>
-
-        <div>
-            <label>Calibration minimum samples</label>
-            <input id="calibrationMin" type="number" value="30" min="10" max="500">
-        </div>
-
-        <div>
-            <label>Champion minimum samples</label>
-            <input id="championMin" type="number" value="100" min="30" max="2000">
-        </div>
-
-        <div>
-            <label>Alert cooldown seconds</label>
-            <input id="alertCooldown" type="number" value="30" min="1" max="3600">
-        </div>
-
-        <div>
-            <label>Matches payout multiplier</label>
-            <input id="matchesPayout" type="number" value="9.5" min="0" step="0.01">
-        </div>
-
-        <div>
-            <label>Differs payout multiplier</label>
-            <input id="differsPayout" type="number" value="1.05" min="0" step="0.01">
-        </div>
-
-    </div>
-
-    <div class="toggle-row">
-        <input id="sound" type="checkbox">
-        <label for="sound">Sound alerts</label>
-    </div>
-
-    <div class="control-buttons">
-        <button class="primary" id="loadBtn">Load History + Save</button>
-        <button class="green" id="startBtn">Start Live</button>
-        <button class="red" id="stopBtn">Stop Live</button>
-        <button class="yellow" id="clearBtn">Clear Saved History</button>
-        <button class="blue" id="alertBtn">Enable Alerts</button>
-        <button id="testAlertBtn">Test Alert</button>
-        <button id="backtestBtn">Run Walk-Forward Backtest</button>
-        <button id="exportBtn">Export Learning Data</button>
-        <button id="importBtn">Import Learning Data</button>
-    </div>
-
-    <input type="file" id="importFile" accept=".json" style="display:none">
-
-    <div class="warning-box" style="margin-top:12px">
-        This application is a research/analysis tool. It does not guarantee profitable trades.
-        A prediction is recorded only when a real subsequent Deriv tick resolves it.
-    </div>
+<div class="card">
+<div class="label">Total resolved</div>
+<div id="resolved" class="value">0</div>
 </div>
 
-
-<!-- STATUS -->
-<div class="card span-4">
-    <h2>Connection</h2>
-
-    <div class="status">
-        <span id="statusDot" class="dot red"></span>
-        <span id="statusText">DATA OFFLINE</span>
-    </div>
-
-    <hr>
-
-    <div class="stat">
-        <div class="small">WebSocket endpoint</div>
-        <div class="value" id="endpointStatus">Not connected</div>
-    </div>
-
-    <br>
-
-    <div class="stat">
-        <div class="small">Stream mode</div>
-        <div class="value" id="streamMode">OFFLINE</div>
-    </div>
-
-    <br>
-
-    <div class="stat">
-        <div class="small">Last real tick</div>
-        <div class="value mono" id="lastTickTime">—</div>
-    </div>
-
-    <br>
-
-    <div class="stat">
-        <div class="small">Data age</div>
-        <div class="value" id="dataAge">—</div>
-    </div>
+<div class="card">
+<div class="label">Wins</div>
+<div id="wins" class="value green">0</div>
 </div>
 
-
-<!-- MAIN PREDICTION -->
-<div class="card span-4">
-    <h2>Next-Tick Prediction</h2>
-
-    <div class="prediction-box">
-
-        <div class="small">ENGINE STATE</div>
-
-        <div style="margin:8px 0">
-            <span id="signalBadge" class="signal offline">
-                DATA OFFLINE
-            </span>
-        </div>
-
-        <div class="small">Predicted next digit</div>
-
-        <div class="predicted-digit" id="predictedDigit">—</div>
-
-        <div class="small">
-            Calibrated probability
-        </div>
-
-        <div class="big" id="predictionProbability">—</div>
-
-        <div class="small" style="margin-top:8px">
-            Model: <span id="modelUsed">—</span>
-        </div>
-
-        <div class="small">
-            Edge: <span id="predictionEdge">—</span>
-        </div>
-
-    </div>
+<div class="card">
+<div class="label">Losses</div>
+<div id="losses" class="value red">0</div>
 </div>
 
-
-<!-- COUNTDOWN -->
-<div class="card span-4">
-    <h2>Market Timing</h2>
-
-    <div class="stat-grid">
-
-        <div class="stat">
-            <div class="small">Last digit</div>
-            <div class="value" id="lastDigit">—</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Tick count</div>
-            <div class="value" id="liveTicks">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Saved digits</div>
-            <div class="value" id="savedDigits">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">10-second boundary</div>
-            <div class="value" id="countdown">—</div>
-        </div>
-
-    </div>
-
-    <hr>
-
-    <div class="small">Latest quote</div>
-    <div class="big mono" id="latestQuote">—</div>
-
-    <div class="small">
-        Epoch: <span id="latestEpoch">—</span>
-    </div>
+<div class="card">
+<div class="label">Overall accuracy</div>
+<div id="accuracy" class="value">—</div>
 </div>
 
-
-<!-- PROBABILITIES -->
-<div class="card span-6">
-    <h2>Ensemble Digit Probabilities</h2>
-
-    <div id="probabilities"></div>
-
-    <div class="digit-buttons" id="digitButtons"></div>
+<div class="card">
+<div class="label">Recent accuracy (last 20)</div>
+<div id="recentAccuracy" class="value">—</div>
 </div>
 
-
-<!-- FEATURES -->
-<div class="card span-6">
-    <h2>Current Feature State</h2>
-
-    <div class="diagnostic">
-
-        <div class="diag-item">
-            <div class="diag-label">Last digit</div>
-            <div class="diag-value" id="featureLast">—</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">2-digit context</div>
-            <div class="diag-value" id="feature2">—</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">3-digit context</div>
-            <div class="diag-value" id="feature3">—</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Recent dominant digit</div>
-            <div class="diag-value" id="featureDominant">—</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Dominant frequency</div>
-            <div class="diag-value" id="featureFrequency">—</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Current streak</div>
-            <div class="diag-value" id="featureStreak">—</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Entropy</div>
-            <div class="diag-value" id="featureEntropy">—</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Data quality</div>
-            <div class="diag-value" id="featureQuality">—</div>
-        </div>
-
-    </div>
+<div class="card">
+<div class="label">Learning rate</div>
+<div id="learning" class="value">Need more results</div>
 </div>
 
-
-<!-- PERFORMANCE -->
-<div class="card span-12">
-    <h2>Verified Learning Performance</h2>
-
-    <div class="stat-grid">
-
-        <div class="stat">
-            <div class="small">Total resolved</div>
-            <div class="value" id="totalResolved">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Wins</div>
-            <div class="value kpi-positive" id="totalWins">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Losses</div>
-            <div class="value kpi-negative" id="totalLosses">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Overall accuracy</div>
-            <div class="value" id="overallAccuracy">—</div>
-        </div>
-
-    </div>
-
-    <br>
-
-    <div class="stat-grid">
-
-        <div class="stat">
-            <div class="small">Recent accuracy</div>
-            <div class="value" id="recentAccuracy">—</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Learning rate</div>
-            <div class="value" id="learningMetric">—</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Champion score</div>
-            <div class="value" id="championScore">—</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Challenger score</div>
-            <div class="value" id="challengerScore">—</div>
-        </div>
-
-    </div>
+<div class="card">
+<div class="label">Champion score</div>
+<div id="champion" class="value">—</div>
 </div>
 
-
-<!-- LAST 20 -->
-<div class="card span-8">
-    <h2>Last 20 Verified Predictions</h2>
-
-    <div style="overflow:auto">
-        <table>
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Prediction</th>
-                    <th>Probability</th>
-                    <th>Model</th>
-                    <th>Actual</th>
-                    <th>Result</th>
-                    <th>Quote</th>
-                </tr>
-            </thead>
-
-            <tbody id="predictionTable">
-            </tbody>
-        </table>
-    </div>
-</div>
-
-
-<!-- MODEL HEALTH -->
-<div class="card span-4">
-    <h2>Model Health</h2>
-
-    <div class="stat">
-        <div class="small">Champion</div>
-        <div class="value" id="championName">—</div>
-    </div>
-
-    <br>
-
-    <div class="stat">
-        <div class="small">Challenger</div>
-        <div class="value" id="challengerName">—</div>
-    </div>
-
-    <br>
-
-    <div class="stat">
-        <div class="small">Promotion status</div>
-        <div class="value" id="promotionStatus">Waiting</div>
-    </div>
-
-    <br>
-
-    <div class="stat">
-        <div class="small">Calibration samples</div>
-        <div class="value" id="calibrationSamples">0</div>
-    </div>
-</div>
-
-
-<!-- DIAGNOSTICS -->
-<div class="card span-6">
-    <h2>Diagnostics</h2>
-
-    <div class="diagnostic">
-
-        <div class="diag-item">
-            <div class="diag-label">History loaded</div>
-            <div class="diag-value" id="diagHistory">0</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Valid ticks</div>
-            <div class="diag-value" id="diagValidTicks">0</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Rejected ticks</div>
-            <div class="diag-value" id="diagRejectedTicks">0</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Predictions generated</div>
-            <div class="diag-value" id="diagPredictions">0</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Predictions skipped</div>
-            <div class="diag-value" id="diagSkipped">0</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Resolved predictions</div>
-            <div class="diag-value" id="diagResolved">0</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Current WebSocket</div>
-            <div class="diag-value" id="diagSocket">Closed</div>
-        </div>
-
-        <div class="diag-item">
-            <div class="diag-label">Background engine</div>
-            <div class="diag-value" id="backgroundStatus">
-                OFFLINE
-            </div>
-        </div>
-
-    </div>
-</div>
-
-
-<!-- BACKTEST -->
-<div class="card span-6">
-    <h2>Walk-Forward Backtest</h2>
-
-    <div class="stat-grid">
-
-        <div class="stat">
-            <div class="small">Test samples</div>
-            <div class="value" id="btSamples">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Wins</div>
-            <div class="value" id="btWins">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Losses</div>
-            <div class="value" id="btLosses">0</div>
-        </div>
-
-        <div class="stat">
-            <div class="small">Accuracy</div>
-            <div class="value" id="btAccuracy">—</div>
-        </div>
-
-    </div>
-
-    <hr>
-
-    <div class="small">
-        Backtest uses earlier data for training and later unseen data for testing.
-        No future test ticks are used to train the model before their prediction.
-    </div>
-
-    <br>
-
-    <div class="small" id="btDetails">
-        No backtest run yet.
-    </div>
-</div>
-
-
-<!-- LOG -->
-<div class="card span-12">
-    <h2>System Log</h2>
-    <div class="log" id="systemLog"></div>
-</div>
-
-
-<!-- EXPLANATION -->
-<div class="card span-12">
-    <h2>How V4 Works</h2>
-
-    <div class="explanation">
-
-        <p>
-            <b>1. REAL DATA:</b>
-            The engine accepts only ticks received from Deriv. It does not create
-            fake ticks, random prices, simulated outcomes or invented historical data.
-        </p>
-
-        <p>
-            <b>2. DATA VALIDATION:</b>
-            Every accepted tick must contain a valid quote and timestamp.
-            Invalid or malformed messages are rejected.
-        </p>
-
-        <p>
-            <b>3. FEATURE ENGINE:</b>
-            The system examines recent digits, one-digit transitions,
-            two-digit transitions, three-digit contexts, digit frequencies,
-            streaks and entropy.
-        </p>
-
-        <p>
-            <b>4. ENSEMBLE:</b>
-            The different models are combined instead of relying on one
-            transition table.
-        </p>
-
-        <p>
-            <b>5. CALIBRATION:</b>
-            Raw model confidence is adjusted using previously resolved
-            predictions. Calibration uses actual outcomes only.
-        </p>
-
-        <p>
-            <b>6. SIGNAL GATING:</b>
-            The system does NOT have to predict every tick.
-            If evidence is too weak, the engine displays
-            <b>NO VALID SIGNAL</b>.
-        </p>
-
-        <p>
-            <b>7. VERIFICATION:</b>
-            A prediction becomes WIN or LOSS only after the next real
-            Deriv tick arrives and supplies the actual next digit.
-        </p>
-
-        <p>
-            <b>8. LEARNING:</b>
-            Model weights change slowly from verified results.
-            The system cannot improve itself using assumptions or fabricated results.
-        </p>
-
-        <p>
-            <b>9. WALK-FORWARD VALIDATION:</b>
-            Historical testing proceeds chronologically.
-            The model only learns from information available before each test prediction.
-        </p>
-
-        <p>
-            <b>10. NO GUARANTEE:</b>
-            Historical accuracy does not guarantee future market results.
-            A high displayed probability is not a promise of a winning trade.
-        </p>
-
-    </div>
+<div class="card">
+<div class="label">Challenger score</div>
+<div id="challenger" class="value">—</div>
 </div>
 
 </div>
 
-<div class="footer">
-    Deriv Prediction Lab V4 — Research software only. Use demo data/testing first.
+<div style="margin-top:14px">
+
+<div class="label">
+Verified accuracy
+</div>
+
+<div class="progress">
+<i id="accuracyBar"></i>
 </div>
 
 </div>
 
+</section>
 
-<div class="alert" id="alertBox">
-    <b id="alertTitle">Alert</b>
-    <div id="alertMessage" style="margin-top:5px"></div>
+
+<section>
+
+<h2>Model Diagnostics</h2>
+
+<div class="grid">
+
+<div class="card">
+<div class="label">Best excluded digit</div>
+<div id="targetDigit" class="value">—</div>
+</div>
+
+<div class="card">
+<div class="label">Estimated DIFFER probability</div>
+<div id="diffProb" class="value">—</div>
+</div>
+
+<div class="card">
+<div class="label">Edge vs 90% baseline</div>
+<div id="edge" class="value">—</div>
+</div>
+
+<div class="card">
+<div class="label">Model agreement</div>
+<div id="agreement" class="value">—</div>
+</div>
+
+</div>
+
+<div class="small" style="margin-top:12px">
+
+For DIFFERS, 90% is the simple ten-digit baseline, not proof of predictive skill.
+
+The dashboard therefore reports the edge separately and keeps validation honest.
+
+</div>
+
+</section>
+
+
+<section>
+
+<h2>Last 20 Verified Predictions</h2>
+
+<div class="tablewrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Time</th>
+<th>Prediction</th>
+<th>Probability</th>
+<th>Model</th>
+<th>Actual</th>
+<th>Result</th>
+<th>Confidence</th>
+</tr>
+
+</thead>
+
+<tbody id="rows">
+
+<tr>
+<td colspan="7" class="small">
+No verified predictions yet.
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+
+<section>
+
+<h2>Digit Distribution — Live Window</h2>
+
+<div id="dist" class="kv"></div>
+
+</section>
+
+
+<section>
+
+<h2>Validation Controls</h2>
+
+<div class="bar">
+
+<button id="clear">
+Clear saved data
+</button>
+
+<button id="export">
+Export verified results
+</button>
+
+</div>
+
+<p class="small">
+
+V4.1 uses historical ticks plus live ticks, multiple rolling windows,
+transition probabilities, recency weighting, model agreement and a
+confidence/edge gate.
+
+It never manufactures ticks or results.
+
+This is a research/validation tool, not a guarantee of profitable trading.
+
+</p>
+
+</section>
+
+
+<footer>
+
+Deriv Prediction Lab V4.1 • live public market-data WebSocket • local IndexedDB persistence
+
+</footer>
+
 </div>
 
 
 <script>
+
 "use strict";
 
-/* ============================================================
-   DERIV PREDICTION LAB V4
-   SINGLE FILE
-   ============================================================ */
+
+/*
+===========================================================
+DERIV PREDICTION LAB V4.1
+===========================================================
+
+REAL DATA ONLY
+
+- Uses Deriv public market-data WebSocket.
+- Loads real historical ticks.
+- Subscribes to live ticks.
+- Stores up to 1,200 ticks locally.
+- Predictions are resolved against the NEXT real tick.
+- No synthetic ticks.
+- No fabricated results.
+- No random predictions.
+- Uses WAIT when evidence is insufficient.
+
+===========================================================
+*/
 
 
-/* ============================================================
-   DOM HELPERS
-   ============================================================ */
+const WS_URL =
+"wss://api.derivws.com/trading/v1/options/ws/public";
 
-const $ = id => document.getElementById(id);
 
-function val(id){
-    return $(id).value;
+const MAX_TICKS = 1200;
+
+const MIN_TICKS = 120;
+
+
+/*
+-----------------------------------------------------------
+ACCURACY GATE
+-----------------------------------------------------------
+*/
+
+const MIN_CONFIDENCE = 0.925;
+
+const MIN_EDGE = 0.025;
+
+const MIN_AGREEMENT = 0.60;
+
+const RECENT_RESULTS = 20;
+
+
+/*
+-----------------------------------------------------------
+LOCAL DATABASE
+-----------------------------------------------------------
+*/
+
+const DB_NAME =
+"deriv_prediction_lab_v41";
+
+const DB_VERSION = 1;
+
+
+/*
+-----------------------------------------------------------
+FALLBACK SYMBOLS
+-----------------------------------------------------------
+*/
+
+const fallbackSymbols = [
+
+["1HZ10V","Volatility 10 (1s)"],
+
+["1HZ25V","Volatility 25 (1s)"],
+
+["1HZ50V","Volatility 50 (1s)"],
+
+["1HZ75V","Volatility 75 (1s)"],
+
+["1HZ100V","Volatility 100 (1s)"],
+
+["1HZ150V","Volatility 150 (1s)"],
+
+["1HZ250V","Volatility 250 (1s)"],
+
+["R_10","Volatility 10"],
+
+["R_25","Volatility 25"],
+
+["R_50","Volatility 50"],
+
+["R_75","Volatility 75"],
+
+["R_100","Volatility 100"]
+
+];
+
+
+/*
+-----------------------------------------------------------
+STATE
+-----------------------------------------------------------
+*/
+
+let ws = null;
+
+let reconnectTimer = null;
+
+let intentionalClose = false;
+
+let reqId = 100;
+
+let currentSymbol =
+localStorage.getItem("v41_symbol") ||
+"1HZ100V";
+
+let objective =
+localStorage.getItem("v41_objective") ||
+"DIFFERS";
+
+let ticks = [];
+
+let predictions = [];
+
+let champion = {
+wins:0,
+total:0
+};
+
+let challenger = {
+wins:0,
+total:0
+};
+
+let lastTickAt = 0;
+
+let pendingPrediction = null;
+
+let db = null;
+
+
+/*
+-----------------------------------------------------------
+SHORT DOM HELPER
+-----------------------------------------------------------
+*/
+
+const $ = id =>
+document.getElementById(id);
+
+
+/*
+-----------------------------------------------------------
+WEBSOCKET SEND
+-----------------------------------------------------------
+*/
+
+const send = obj => {
+
+if(
+ws &&
+ws.readyState === WebSocket.OPEN
+){
+
+ws.send(JSON.stringify(obj));
+
 }
-
-function num(id, fallback=0){
-    const n = Number($(id).value);
-    return Number.isFinite(n) ? n : fallback;
-}
-
-
-/* ============================================================
-   STATE
-   ============================================================ */
-
-const state = {
-
-    ws:null,
-
-    wsEndpointIndex:0,
-
-    endpoints:[
-        "wss://api.derivws.com/trading/v1/options/ws/public",
-        "wss://ws.derivws.com/websockets/v3",
-        "wss://ws.binaryws.com/websockets/v3"
-    ],
-
-    connected:false,
-
-    streamSubscribed:false,
-
-    streamMode:"OFFLINE",
-
-    reconnectTimer:null,
-
-    heartbeatTimer:null,
-
-    staleTimer:null,
-
-    countdownTimer:null,
-
-    selectedSymbol:"R_50",
-
-    lastQuote:null,
-
-    lastEpoch:null,
-
-    lastDigit:null,
-
-    previousDigit:null,
-
-    ticksReceived:0,
-
-    validTicks:0,
-
-    rejectedTicks:0,
-
-    historyLoaded:0,
-
-    predictionsGenerated:0,
-
-    predictionsSkipped:0,
-
-    resolvedPredictions:0,
-
-    liveStartTime:null,
-
-    lastRealTickMs:0,
-
-    pendingPrediction:null,
-
-    predictions:[],
-
-    savedDigits:[],
-
-    tickRecords:[],
-
-    learningResults:[],
-
-    calibrationBins:[],
-
-    champion:{
-        name:"Ensemble V4",
-        wins:0,
-        samples:0
-    },
-
-    challenger:{
-        name:"Adaptive Candidate",
-        wins:0,
-        samples:0
-    },
-
-    modelWeights:{
-        one:0.30,
-        two:0.50,
-        three:0.35
-    },
-
-    lastPredictionTime:0,
-
-    alertsEnabled:false,
-
-    alertLastTime:0,
-
-    audioContext:null,
-
-    diagnostics:{
-        reconnects:0,
-        historyRequests:0,
-        tickRequests:0
-    }
 
 };
 
 
-/* ============================================================
-   LOCAL STORAGE
-   ============================================================ */
-
-function storageKey(symbol){
-    return "deriv_prediction_lab_v4_" + symbol;
-}
-
-function learningKey(symbol){
-    return "deriv_prediction_lab_v4_learning_" + symbol;
-}
-
-function saveLocal(){
-
-    const symbol = val("symbol");
-
-    const data = {
-        version:"V4",
-        symbol,
-        savedDigits:state.savedDigits.slice(-num("maxSaved",50000)),
-        tickRecords:state.tickRecords.slice(-50000),
-        lastEpoch:state.lastEpoch
-    };
-
-    try{
-        localStorage.setItem(storageKey(symbol),JSON.stringify(data));
-    }catch(e){
-        log("Local storage save failed: "+e.message,"bad");
-    }
-
-    saveLearning();
-}
-
-function loadLocal(){
-
-    const symbol = val("symbol");
-
-    try{
-
-        const raw = localStorage.getItem(storageKey(symbol));
-
-        if(!raw){
-            state.savedDigits=[];
-            state.tickRecords=[];
-            updateStats();
-            return;
-        }
-
-        const data = JSON.parse(raw);
-
-        if(Array.isArray(data.savedDigits)){
-            state.savedDigits=data.savedDigits
-                .filter(d => Number.isInteger(d) && d>=0 && d<=9)
-                .slice(-num("maxSaved",50000));
-        }
-
-        if(Array.isArray(data.tickRecords)){
-            state.tickRecords=data.tickRecords.slice(-50000);
-        }
-
-        state.lastEpoch=data.lastEpoch || null;
-
-        log(
-            `Loaded ${state.savedDigits.length} saved real digits for ${symbol}.`,
-            "good"
-        );
-
-        updateStats();
-
-    }catch(e){
-
-        log("Could not load local history: "+e.message,"bad");
-
-    }
-}
-
-
-function saveLearning(){
-
-    const symbol = val("symbol");
-
-    const data = {
-        version:"V4",
-        predictions:state.predictions.slice(-5000),
-        learningResults:state.learningResults.slice(-5000),
-        champion:state.champion,
-        challenger:state.challenger,
-        modelWeights:state.modelWeights
-    };
-
-    try{
-        localStorage.setItem(
-            learningKey(symbol),
-            JSON.stringify(data)
-        );
-    }catch(e){
-        log("Learning storage failed: "+e.message,"bad");
-    }
-}
-
-
-function loadLearning(){
-
-    const symbol=val("symbol");
-
-    try{
-
-        const raw=localStorage.getItem(learningKey(symbol));
-
-        if(!raw){
-            state.predictions=[];
-            state.learningResults=[];
-            return;
-        }
-
-        const data=JSON.parse(raw);
-
-        if(Array.isArray(data.predictions)){
-            state.predictions=data.predictions.slice(-5000);
-        }
-
-        if(Array.isArray(data.learningResults)){
-            state.learningResults=data.learningResults.slice(-5000);
-        }
-
-        if(data.champion){
-            state.champion=data.champion;
-        }
-
-        if(data.challenger){
-            state.challenger=data.challenger;
-        }
-
-        if(data.modelWeights){
-            state.modelWeights={
-                ...state.modelWeights,
-                ...data.modelWeights
-            };
-        }
-
-        updatePerformance();
-
-    }catch(e){
-
-        log("Could not load learning data: "+e.message,"bad");
-
-    }
-}
-
-
-/* ============================================================
-   LOGGING
-   ============================================================ */
-
-function log(message,type="info"){
-
-    const container=$("systemLog");
-
-    const row=document.createElement("div");
-
-    row.className="log-line "+type;
-
-    const time=new Date().toLocaleTimeString();
-
-    row.textContent=`[${time}] ${message}`;
-
-    container.appendChild(row);
-
-    while(container.children.length>300){
-        container.removeChild(container.firstChild);
-    }
-
-    container.scrollTop=container.scrollHeight;
-}
-
-
-/* ============================================================
-   STATUS
-   ============================================================ */
-
-function setStatus(status){
-
-    const dot=$("statusDot");
-    const text=$("statusText");
-
-    dot.className="dot";
-
-    if(status==="LIVE DATA"){
-
-        dot.classList.add("green");
-        text.textContent="LIVE DATA";
-
-    }else if(status==="CONNECTING TO DERIV"){
-
-        dot.classList.add("yellow");
-        text.textContent="CONNECTING TO DERIV";
-
-    }else if(status==="DATA OFFLINE"){
-
-        dot.classList.add("red");
-        text.textContent="DATA OFFLINE";
-
-    }else{
-
-        dot.classList.add("blue");
-        text.textContent=status;
-    }
-}
-
-
-/* ============================================================
-   QUOTE -> LAST DIGIT
-   ============================================================ */
-
-function getLastDigitFromQuote(quote){
-
-    if(quote===null || quote===undefined){
-        return null;
-    }
-
-    let s=String(quote).trim();
-
-    if(!s){
-        return null;
-    }
-
-    /*
-      Do not use random digits.
-
-      Preserve the actual decimal representation returned
-      by Deriv as much as possible.
-    */
-
-    if(s.includes("e") || s.includes("E")){
-
-        const n=Number(s);
-
-        if(!Number.isFinite(n)){
-            return null;
-        }
-
-        s=n.toFixed(8);
-    }
-
-    const digits=s.replace(/\D/g,"");
-
-    if(!digits.length){
-        return null;
-    }
-
-    return Number(digits[digits.length-1]);
-}
-
-
-/* ============================================================
-   TICK VALIDATION
-   ============================================================ */
-
-function validateTick(tick){
-
-    if(!tick || typeof tick!=="object"){
-        return null;
-    }
-
-    const epoch=Number(tick.epoch);
-    const quote=Number(tick.quote);
-
-    if(!Number.isFinite(epoch)){
-        return null;
-    }
-
-    if(!Number.isFinite(quote)){
-        return null;
-    }
-
-    const symbol=tick.symbol || state.selectedSymbol;
-
-    if(symbol!==state.selectedSymbol){
-        return null;
-    }
-
-    const digit=getLastDigitFromQuote(tick.quote);
-
-    if(!Number.isInteger(digit) || digit<0 || digit>9){
-        return null;
-    }
-
-    return {
-        epoch,
-        quote,
-        symbol,
-        digit
-    };
-}
-
-
-/* ============================================================
-   MODEL UTILITIES
-   ============================================================ */
-
-function createCounts(){
-
-    return Array.from(
-        {length:10},
-        ()=>0
-    );
-}
-
-
-function createMatrix(rows){
-
-    return Array.from(
-        {length:rows},
-        ()=>createCounts()
-    );
-}
-
-
-function createContextCounts(contextLength){
-
-    const map=new Map();
-
-    return {
-        contextLength,
-        map
-    };
-}
-
-
-function incrementMap(map,key,digit){
-
-    if(!map.has(key)){
-        map.set(key,createCounts());
-    }
-
-    map.get(key)[digit]++;
-}
-
-
-/* ============================================================
-   BUILD MODEL FROM HISTORY
-   ============================================================ */
-
-function buildModels(sequence){
-
-    const one=createMatrix(10);
-
-    const two=new Map();
-
-    const three=new Map();
-
-    const freq=createCounts();
-
-    for(const d of sequence){
-        if(Number.isInteger(d)){
-            freq[d]++;
-        }
-    }
-
-    for(let i=1;i<sequence.length;i++){
-
-        const prev=sequence[i-1];
-        const next=sequence[i];
-
-        if(
-            Number.isInteger(prev) &&
-            Number.isInteger(next)
-        ){
-            one[prev][next]++;
-        }
-    }
-
-    for(let i=2;i<sequence.length;i++){
-
-        const key=
-            String(sequence[i-2])+
-            String(sequence[i-1]);
-
-        incrementMap(two,key,sequence[i]);
-    }
-
-    for(let i=3;i<sequence.length;i++){
-
-        const key=
-            String(sequence[i-3])+
-            String(sequence[i-2])+
-            String(sequence[i-1]);
-
-        incrementMap(three,key,sequence[i]);
-    }
-
-    return {
-        one,
-        two,
-        three,
-        freq
-    };
-}
-
-
-/* ============================================================
-   PROBABILITY FROM COUNTS
-   ============================================================ */
-
-function probabilitiesFromCounts(counts,smoothing){
-
-    const result=createCounts();
-
-    let total=0;
-
-    for(let i=0;i<10;i++){
-        total+=counts[i];
-    }
-
-    const alpha=Math.max(0.0001,smoothing);
-
-    const denominator=total+10*alpha;
-
-    for(let i=0;i<10;i++){
-        result[i]=(counts[i]+alpha)/denominator;
-    }
-
-    return result;
-}
-
-
-/* ============================================================
-   FREQUENCY MODEL
-   ============================================================ */
-
-function frequencyProbabilities(sequence,windowSize=100){
-
-    const recent=sequence.slice(-windowSize);
-
-    const counts=createCounts();
-
-    for(const d of recent){
-        if(Number.isInteger(d)){
-            counts[d]++;
-        }
-    }
-
-    return probabilitiesFromCounts(counts,num("smoothing",1));
-}
-
-
-/* ============================================================
-   1 DIGIT MODEL
-   ============================================================ */
-
-function modelOne(sequence,models){
-
-    if(sequence.length<2){
-        return null;
-    }
-
-    const prev=sequence[sequence.length-1];
-
-    return probabilitiesFromCounts(
-        models.one[prev],
-        num("smoothing",1)
-    );
-}
-
-
-/* ============================================================
-   2 DIGIT MODEL
-   ============================================================ */
-
-function modelTwo(sequence,models){
-
-    if(sequence.length<3){
-        return null;
-    }
-
-    const key=
-        String(sequence[sequence.length-2])+
-        String(sequence[sequence.length-1]);
-
-    const counts=models.two.get(key);
-
-    if(!counts){
-        return null;
-    }
-
-    return probabilitiesFromCounts(
-        counts,
-        num("smoothing",1)
-    );
-}
-
-
-/* ============================================================
-   3 DIGIT MODEL
-   ============================================================ */
-
-function modelThree(sequence,models){
-
-    if(sequence.length<4){
-        return null;
-    }
-
-    const key=
-        String(sequence[sequence.length-3])+
-        String(sequence[sequence.length-2])+
-        String(sequence[sequence.length-1]);
-
-    const counts=models.three.get(key);
-
-    if(!counts){
-        return null;
-    }
-
-    return probabilitiesFromCounts(
-        counts,
-        num("smoothing",1)
-    );
-}
-
-
-/* ============================================================
-   NORMALIZE
-   ============================================================ */
-
-function normalize(arr){
-
-    const sum=arr.reduce((a,b)=>a+b,0);
-
-    if(sum<=0){
-        return arr.map(()=>0.1);
-    }
-
-    return arr.map(x=>x/sum);
-}
-
-
-/* ============================================================
-   ENSEMBLE
-   ============================================================ */
-
-function buildEnsemble(sequence){
-
-    const models=buildModels(
-        sequence.slice(
-            -num("modelWindow",2000)
-        )
-    );
-
-    const p1=modelOne(sequence,models);
-    const p2=modelTwo(sequence,models);
-    const p3=modelThree(sequence,models);
-    const pf=frequencyProbabilities(sequence,100);
-
-    const weights={
-        one:Math.max(0,num("weight1",30))/100,
-        two:Math.max(0,num("weight2",50))/100,
-        three:Math.max(0,num("weight3",35))/100,
-        freq:0.15
-    };
-
-    /*
-       Adaptive model weights are intentionally limited.
-       Learning cannot instantly make one model dominate.
-    */
-
-    weights.one*=state.modelWeights.one/0.30;
-    weights.two*=state.modelWeights.two/0.50;
-    weights.three*=state.modelWeights.three/0.35;
-
-    let output=createCounts();
-    let totalWeight=0;
-
-    function addModel(prob,weight){
-
-        if(!prob || weight<=0){
-            return;
-        }
-
-        for(let i=0;i<10;i++){
-            output[i]+=prob[i]*weight;
-        }
-
-        totalWeight+=weight;
-    }
-
-    addModel(p1,weights.one);
-    addModel(p2,weights.two);
-    addModel(p3,weights.three);
-    addModel(pf,weights.freq);
-
-    if(totalWeight<=0){
-        return {
-            probabilities:pf,
-            p1,p2,p3,pf,
-            models
-        };
-    }
-
-    output=output.map(x=>x/totalWeight);
-
-    return {
-        probabilities:normalize(output),
-        p1,p2,p3,pf,
-        models
-    };
-}
-
-
-/* ============================================================
-   ENTROPY
-   ============================================================ */
-
-function entropy(prob){
-
-    let h=0;
-
-    for(const p of prob){
-
-        if(p>0){
-            h-=p*Math.log2(p);
-        }
-    }
-
-    return h;
-}
-
-
-/* ============================================================
-   FEATURES
-   ============================================================ */
-
-function getFeatures(sequence){
-
-    const recent=sequence.slice(-100);
-
-    const counts=createCounts();
-
-    for(const d of recent){
-        counts[d]++;
-    }
-
-    let dominant=0;
-
-    for(let i=1;i<10;i++){
-        if(counts[i]>counts[dominant]){
-            dominant=i;
-        }
-    }
-
-    let streak=1;
-
-    if(sequence.length>1){
-
-        const last=sequence[sequence.length-1];
-
-        for(
-            let i=sequence.length-2;
-            i>=0;
-            i--
-        ){
-
-            if(sequence[i]===last){
-                streak++;
-            }else{
-                break;
-            }
-        }
-    }
-
-    const freq=
-        recent.length?
-        counts[dominant]/recent.length:
-        0;
-
-    const probabilities=
-        recent.length?
-        counts.map(x=>x/recent.length):
-        createCounts().map(()=>0.1);
-
-    return {
-
-        last:
-            sequence.length?
-            sequence[sequence.length-1]:
-            null,
-
-        context2:
-            sequence.length>=2?
-            sequence.slice(-2).join(""):
-            "—",
-
-        context3:
-            sequence.length>=3?
-            sequence.slice(-3).join(""):
-            "—",
-
-        dominant,
-
-        frequency:freq,
-
-        streak,
-
-        entropy:entropy(probabilities),
-
-        quality:
-            recent.length>=30?
-            "GOOD":
-            recent.length>=10?
-            "LIMITED":
-            "INSUFFICIENT"
-    };
-}
-
-
-/* ============================================================
-   CALIBRATION
-   ============================================================ */
-
-function calibrationProbability(raw){
-
-    const results=state.learningResults;
-
-    if(
-        results.length<
-        num("calibrationMin",30)
-    ){
-        return raw;
-    }
-
-    /*
-      Bucket actual outcomes by confidence.
-      This is empirical calibration, not assumed calibration.
-    */
-
-    const bucket=Math.min(
-        9,
-        Math.max(
-            0,
-            Math.floor(raw*10)
-        )
-    );
-
-    const relevant=results.filter(r =>
-        Number.isFinite(r.probability) &&
-        Math.floor(
-            Math.min(.9999,Math.max(0,r.probability))*10
-        )===bucket
-    );
-
-    if(relevant.length<10){
-        return raw;
-    }
-
-    const wins=
-        relevant.reduce(
-            (sum,r)=>sum+(r.win?1:0),
-            0
-        );
-
-    const empirical=wins/relevant.length;
-
-    /*
-      Shrink empirical estimate toward raw probability.
-      This prevents tiny samples from producing extreme numbers.
-    */
-
-    const n=relevant.length;
-
-    const alpha=Math.min(
-        0.75,
-        n/(n+50)
-    );
-
-    return raw*(1-alpha)+empirical*alpha;
-}
-
-
-/* ============================================================
-   SELECT PREDICTION
-   ============================================================ */
-
-function choosePrediction(sequence){
-
-    if(sequence.length<30){
-        return {
-            valid:false,
-            reason:"Need at least 30 verified ticks"
-        };
-    }
-
-    const ensemble=buildEnsemble(sequence);
-
-    const p=ensemble.probabilities;
-
-    let best=0;
-
-    for(let i=1;i<10;i++){
-
-        if(p[i]>p[best]){
-            best=i;
-        }
-    }
-
-    const raw=p[best];
-
-    const calibrated=calibrationProbability(raw);
-
-    const baseline=0.10;
-
-    const edge=(calibrated-baseline)*100;
-
-    const minConfidence=num(
-        "minConfidence",
-        16
-    );
-
-    const minEdge=num(
-        "edgeThreshold",
-        0.5
-    );
-
-    /*
-      Signal quality checks.
-    */
-
-    const h=entropy(p);
-
-    const sufficientConfidence=
-        calibrated*100>=minConfidence;
-
-    const sufficientEdge=
-        edge>=minEdge;
-
-    const feature=getFeatures(sequence);
-
-    const sufficientData=
-        feature.quality!=="INSUFFICIENT";
-
-    const valid=
-        sufficientConfidence &&
-        sufficientEdge &&
-        sufficientData;
-
-    let reason="";
-
-    if(!sufficientData){
-        reason="Insufficient real tick data";
-    }else if(!sufficientConfidence){
-        reason="Confidence below threshold";
-    }else if(!sufficientEdge){
-        reason="Edge below threshold";
-    }else{
-        reason="Valid signal";
-    }
-
-    /*
-      Determine which model had strongest local evidence.
-    */
-
-    let modelUsed="Ensemble";
-
-    const modelScores=[
-        ["1-digit",ensemble.p1?Math.max(...ensemble.p1):0],
-        ["2-digit",ensemble.p2?Math.max(...ensemble.p2):0],
-        ["3-digit",ensemble.p3?Math.max(...ensemble.p3):0]
-    ];
-
-    modelScores.sort((a,b)=>b[1]-a[1]);
-
-    if(modelScores[0][1]>calibrated){
-        modelUsed=modelScores[0][0]+" + ensemble";
-    }else{
-        modelUsed="Ensemble";
-    }
-
-    return {
-
-        valid,
-
-        reason,
-
-        digit:best,
-
-        rawProbability:raw,
-
-        probability:Math.min(
-            0.999,
-            Math.max(0.001,calibrated)
-        ),
-
-        edge,
-
-        entropy:h,
-
-        modelUsed,
-
-        probabilities:p,
-
-        ensemble
-
-    };
-}
-
-
-/* ============================================================
-   UI PROBABILITIES
-   ============================================================ */
-
-function renderProbabilities(probabilities,selected=-1){
-
-    const container=$("probabilities");
-
-    container.innerHTML="";
-
-    for(let i=0;i<10;i++){
-
-        const row=document.createElement("div");
-
-        row.className="probability";
-
-        const pct=
-            (probabilities[i]*100).toFixed(2);
-
-        row.innerHTML=`
-            <div class="prob-head">
-                <span>Digit ${i}</span>
-                <span>${pct}%</span>
-            </div>
-
-            <div class="bar">
-                <div class="bar-fill"
-                     style="width:${Math.min(100,probabilities[i]*100)}%">
-                </div>
-            </div>
-        `;
-
-        container.appendChild(row);
-    }
-
-    const buttons=$("digitButtons");
-
-    buttons.innerHTML="";
-
-    for(let i=0;i<10;i++){
-
-        const box=document.createElement("div");
-
-        box.className="digit-box";
-
-        if(i===selected){
-            box.classList.add("active");
-        }
-
-        box.innerHTML=
-            `<b>${i}</b><br>${(probabilities[i]*100).toFixed(1)}%`;
-
-        buttons.appendChild(box);
-    }
-}
-
-
-/* ============================================================
-   UPDATE FEATURES
-   ============================================================ */
-
-function updateFeatures(){
-
-    const f=getFeatures(state.savedDigits);
-
-    $("featureLast").textContent=
-        f.last===null?"—":f.last;
-
-    $("feature2").textContent=f.context2;
-
-    $("feature3").textContent=f.context3;
-
-    $("featureDominant").textContent=
-        f.dominant;
-
-    $("featureFrequency").textContent=
-        (f.frequency*100).toFixed(1)+"%";
-
-    $("featureStreak").textContent=
-        f.streak;
-
-    $("featureEntropy").textContent=
-        f.entropy.toFixed(3);
-
-    $("featureQuality").textContent=
-        f.quality;
-}
-
-
-/* ============================================================
-   UPDATE STATS
-   ============================================================ */
-
-function updateStats(){
-
-    $("savedDigits").textContent=
-        state.savedDigits.length;
-
-    $("liveTicks").textContent=
-        state.ticksReceived;
-
-    $("diagHistory").textContent=
-        state.historyLoaded;
-
-    $("diagValidTicks").textContent=
-        state.validTicks;
-
-    $("diagRejectedTicks").textContent=
-        state.rejectedTicks;
-
-    $("diagPredictions").textContent=
-        state.predictionsGenerated;
-
-    $("diagSkipped").textContent=
-        state.predictionsSkipped;
-
-    $("diagResolved").textContent=
-        state.resolvedPredictions;
-
-    $("backgroundStatus").textContent=
-        state.connected?
-        "RUNNING IN THIS BROWSER":
-        "OFFLINE";
-
-    $("diagSocket").textContent=
-        state.ws?
-        state.ws.readyState===WebSocket.OPEN?
-        "OPEN":
-        state.ws.readyState===WebSocket.CONNECTING?
-        "CONNECTING":
-        "CLOSED":
-        "Closed";
-
-    if(state.lastEpoch){
-
-        $("lastTickTime").textContent=
-            new Date(
-                state.lastEpoch*1000
-            ).toLocaleTimeString();
-
-    }
-
-    if(state.lastRealTickMs){
-
-        const age=
-            Math.max(
-                0,
-                Date.now()-state.lastRealTickMs
-            );
-
-        $("dataAge").textContent=
-            (age/1000).toFixed(1)+" s";
-
-    }
-
-    updateFeatures();
-    updatePerformance();
-}
-
-
-/* ============================================================
-   PERFORMANCE
-   ============================================================ */
-
-function updatePerformance(){
-
-    const results=state.learningResults;
-
-    const total=results.length;
-
-    const wins=
-        results.filter(r=>r.win).length;
-
-    const losses=
-        total-wins;
-
-    $("totalResolved").textContent=total;
-    $("totalWins").textContent=wins;
-    $("totalLosses").textContent=losses;
-
-    $("overallAccuracy").textContent=
-        total?
-        ((wins/total)*100).toFixed(2)+"%":
-        "—";
-
-    const windowSize=num(
-        "accuracyWindow",
-        100
-    );
-
-    const recent=results.slice(-windowSize);
-
-    const rwins=
-        recent.filter(r=>r.win).length;
-
-    $("recentAccuracy").textContent=
-        recent.length?
-        ((rwins/recent.length)*100).toFixed(2)+"%":
-        "—";
-
-    /*
-      Learning metric:
-      compare recent half to previous half.
-      This is descriptive only.
-    */
-
-    if(results.length>=40){
-
-        const half=Math.floor(
-            Math.min(
-                200,
-                results.length/2
-            )
-        );
-
-        const a=results.slice(
-            -(half*2),
-            -half
-        );
-
-        const b=results.slice(-half);
-
-        const ar=
-            a.filter(r=>r.win).length/
-            a.length;
-
-        const br=
-            b.filter(r=>r.win).length/
-            b.length;
-
-        const diff=(br-ar)*100;
-
-        $("learningMetric").textContent=
-            (diff>=0?"+":"")+
-            diff.toFixed(2)+" pp";
-
-    }else{
-        $("learningMetric").textContent="Need more results";
-    }
-
-    const cw=state.champion.samples?
-        state.champion.wins/
-        state.champion.samples:
-        0;
-
-    const ch=state.challenger.samples?
-        state.challenger.wins/
-        state.challenger.samples:
-        0;
-
-    $("championScore").textContent=
-        state.champion.samples?
-        (cw*100).toFixed(2)+"%":
-        "—";
-
-    $("challengerScore").textContent=
-        state.challenger.samples?
-        (ch*100).toFixed(2)+"%":
-        "—";
-
-    $("championName").textContent=
-        state.champion.name;
-
-    $("challengerName").textContent=
-        state.challenger.name;
-
-    $("calibrationSamples").textContent=
-        results.length;
-
-    updatePredictionTable();
-}
-
-
-/* ============================================================
-   PREDICTION TABLE
-   ============================================================ */
-
-function updatePredictionTable(){
-
-    const tbody=$("predictionTable");
-
-    tbody.innerHTML="";
-
-    const recent=state.predictions.slice(-20).reverse();
-
-    for(const p of recent){
-
-        const tr=document.createElement("tr");
-
-        let result="PENDING";
-        let cls="pending";
-
-        if(p.resolved){
-
-            if(p.win){
-                result="WIN";
-                cls="win";
-            }else{
-                result="LOSS";
-                cls="loss";
-            }
-        }
-
-        const time=
-            p.time?
-            new Date(p.time).toLocaleTimeString():
-            "—";
-
-        tr.innerHTML=`
-            <td class="nowrap">${time}</td>
-            <td><b>${p.predicted}</b></td>
-            <td>${(p.probability*100).toFixed(2)}%</td>
-            <td>${p.model}</td>
-            <td>${p.actual===null?"—":p.actual}</td>
-            <td class="${cls}">${result}</td>
-            <td class="mono">${p.actualQuote===null?"—":p.actualQuote}</td>
-        `;
-
-        tbody.appendChild(tr);
-    }
-}
-
-
-/* ============================================================
-   PREDICTION ENGINE
-   ============================================================ */
-
-function generatePrediction(){
-
-    if(!state.connected){
-        return;
-    }
-
-    if(
-        !state.lastRealTickMs ||
-        Date.now()-state.lastRealTickMs>5000
-    ){
-        setPredictionOffline(
-            "DATA OFFLINE"
-        );
-        return;
-    }
-
-    /*
-      Prevent two unresolved predictions at once.
-      The next real tick resolves the current prediction.
-    */
-
-    if(state.pendingPrediction){
-        return;
-    }
-
-    const result=
-        choosePrediction(state.savedDigits);
-
-    if(!result.valid){
-
-        state.predictionsSkipped++;
-
-        setPredictionNoSignal(
-            result.reason,
-            result.probabilities
-        );
-
-        updateStats();
-
-        return;
-    }
-
-    const prediction={
-
-        id:
-            Date.now()+"_"+Math.random()
-                .toString(36)
-                .slice(2),
-
-        time:new Date().toISOString(),
-
-        epoch:state.lastEpoch,
-
-        symbol:state.selectedSymbol,
-
-        predicted:result.digit,
-
-        probability:result.probability,
-
-        rawProbability:result.rawProbability,
-
-        edge:result.edge,
-
-        model:result.modelUsed,
-
-        actual:null,
-
-        actualQuote:null,
-
-        resolved:false,
-
-        win:null
-
-    };
-
-    state.pendingPrediction=prediction;
-
-    state.predictions.push(prediction);
-
-    state.predictionsGenerated++;
-
-    $("predictedDigit").textContent=
-        result.digit;
-
-    $("predictionProbability").textContent=
-        (result.probability*100).toFixed(2)+"%";
-
-    $("predictionEdge").textContent=
-        (result.edge>=0?"+":"")+
-        result.edge.toFixed(2)+"%";
-
-    $("modelUsed").textContent=
-        result.modelUsed;
-
-    $("signalBadge").textContent=
-        "VALID SIGNAL";
-
-    $("signalBadge").className=
-        "signal valid";
-
-    renderProbabilities(
-        result.probabilities,
-        result.digit
-    );
-
-    state.lastPredictionTime=Date.now();
-
-    if(
-        state.alertsEnabled &&
-        Date.now()-state.alertLastTime >=
-        num("alertCooldown",30)*1000
-    ){
-
-        showAlert(
-            "New valid signal",
-            `Digit ${result.digit} • ${(result.probability*100).toFixed(1)}%`
-        );
-
-        state.alertLastTime=Date.now();
-
-        beep();
-    }
-
-    log(
-        `Prediction: ${result.digit} | ${(result.probability*100).toFixed(2)}% | ${result.modelUsed}`,
-        "good"
-    );
-
-    updateStats();
-}
-
-
-/* ============================================================
-   PREDICTION UI STATES
-   ============================================================ */
-
-function setPredictionOffline(text){
-
-    $("signalBadge").textContent=text;
-
-    $("signalBadge").className=
-        "signal offline";
-
-    $("predictedDigit").textContent="—";
-
-    $("predictionProbability").textContent="—";
-
-    $("predictionEdge").textContent="—";
-
-    $("modelUsed").textContent="—";
-}
-
-
-function setPredictionNoSignal(reason,probabilities=null){
-
-    $("signalBadge").textContent=
-        "NO VALID SIGNAL";
-
-    $("signalBadge").className=
-        "signal none";
-
-    $("predictedDigit").textContent="—";
-
-    $("predictionProbability").textContent="—";
-
-    $("predictionEdge").textContent="—";
-
-    $("modelUsed").textContent=reason;
-
-    if(probabilities){
-
-        let best=0;
-
-        for(let i=1;i<10;i++){
-            if(probabilities[i]>probabilities[best]){
-                best=i;
-            }
-        }
-
-        renderProbabilities(
-            probabilities,
-            -1
-        );
-    }
-}
-
-
-/* ============================================================
-   RESOLVE PREDICTION
-   ============================================================ */
-
-function resolvePendingPrediction(tick){
-
-    if(!state.pendingPrediction){
-        return;
-    }
-
-    const p=state.pendingPrediction;
-
-    p.actual=tick.digit;
-
-    p.actualQuote=tick.quote;
-
-    p.actualEpoch=tick.epoch;
-
-    p.resolved=true;
-
-    p.win=
-        p.predicted===p.actual;
-
-    state.learningResults.push({
-
-        id:p.id,
-
-        time:p.time,
-
-        symbol:p.symbol,
-
-        predicted:p.predicted,
-
-        actual:p.actual,
-
-        probability:p.probability,
-
-        win:p.win,
-
-        model:p.model
-
-    });
-
-    state.learningResults=
-        state.learningResults.slice(-5000);
-
-    state.resolvedPredictions++;
-
-    if(p.win){
-
-        log(
-            `RESOLVED WIN — predicted ${p.predicted}, actual ${p.actual}`,
-            "good"
-        );
-
-    }else{
-
-        log(
-            `RESOLVED LOSS — predicted ${p.predicted}, actual ${p.actual}`,
-            "bad"
-        );
-
-    }
-
-    updateAdaptiveLearning(p);
-
-    state.pendingPrediction=null;
-
-    saveLearning();
-
-    updatePerformance();
-}
-
-
-/* ============================================================
-   ADAPTIVE LEARNING
-   ============================================================ */
-
-function updateAdaptiveLearning(prediction){
-
-    const lr=Math.max(
-        0.001,
-        Math.min(
-            0.5,
-            num("learningRate",0.05)
-        )
-    );
-
-    /*
-      Slow update.
-
-      We do NOT modify weights aggressively after one result.
-    */
-
-    const result=
-        prediction.win?
-        1:
-        0;
-
-    if(prediction.model.includes("3-digit")){
-
-        state.modelWeights.three +=
-            lr*(result-0.5)*0.10;
-
-    }else if(prediction.model.includes("2-digit")){
-
-        state.modelWeights.two +=
-            lr*(result-0.5)*0.10;
-
-    }else{
-
-        state.modelWeights.one +=
-            lr*(result-0.5)*0.10;
-    }
-
-    /*
-      Keep weights in a reasonable range.
-    */
-
-    state.modelWeights.one=
-        clamp(
-            state.modelWeights.one,
-            0.05,
-            1
-        );
-
-    state.modelWeights.two=
-        clamp(
-            state.modelWeights.two,
-            0.05,
-            1
-        );
-
-    state.modelWeights.three=
-        clamp(
-            state.modelWeights.three,
-            0.05,
-            1
-        );
-
-    /*
-      Champion/Challenger evaluation is deliberately conservative.
-    */
-
-    evaluateChampionChallenger();
-}
-
-
-function clamp(x,min,max){
-    return Math.max(
-        min,
-        Math.min(max,x)
-    );
-}
-
-
-/* ============================================================
-   CHAMPION / CHALLENGER
-   ============================================================ */
-
-function evaluateChampionChallenger(){
-
-    const results=state.learningResults;
-
-    if(results.length<20){
-        return;
-    }
-
-    const recent=results.slice(-200);
-
-    /*
-      Champion = actual current model performance.
-
-      Challenger is a simulated alternative score based on
-      a simpler frequency baseline over the same verified
-      predictions. It does NOT fabricate market outcomes.
-    */
-
-    state.champion={
-        name:"Ensemble V4",
-        wins:recent.filter(r=>r.win).length,
-        samples:recent.length
-    };
-
-    /*
-      Challenger baseline:
-      choose the most common recent digit from information
-      available before each result.
-
-      We reconstruct chronologically.
-    */
-
-    let cw=0;
-    let cs=0;
-
-    const history=state.savedDigits.slice();
-
-    for(let i=0;i<recent.length;i++){
-
-        const r=recent[i];
-
-        if(
-            !Number.isInteger(r.actual)
-        ){
-            continue;
-        }
-
-        /*
-          This is only a diagnostic baseline.
-        */
-
-        const counts=createCounts();
-
-        const start=Math.max(
-            0,
-            history.length-100-i
-        );
-
-        const sample=history.slice(
-            start,
-            Math.max(start,history.length-i-1)
-        );
-
-        for(const d of sample){
-            counts[d]++;
-        }
-
-        let best=0;
-
-        for(let d=1;d<10;d++){
-            if(counts[d]>counts[best]){
-                best=d;
-            }
-        }
-
-        if(best===r.actual){
-            cw++;
-        }
-
-        cs++;
-    }
-
-    state.challenger={
-        name:"Frequency Challenger",
-        wins:cw,
-        samples:cs
-    };
-
-    const min=num(
-        "championMin",
-        100
-    );
-
-    if(
-        state.challenger.samples>=min &&
-        state.champion.samples>=min
-    ){
-
-        const championRate=
-            state.champion.wins/
-            state.champion.samples;
-
-        const challengerRate=
-            state.challenger.wins/
-            state.challenger.samples;
-
-        if(
-            challengerRate>
-            championRate+0.02
-        ){
-
-            $("promotionStatus").textContent=
-                "Challenger stronger";
-
-        }else{
-
-            $("promotionStatus").textContent=
-                "Champion retained";
-        }
-
-    }else{
-
-        $("promotionStatus").textContent=
-            "Waiting for samples";
-    }
-}
-
-
-/* ============================================================
-   ADD REAL TICK
-   ============================================================ */
-
-function processTick(rawTick){
-
-    const tick=validateTick(rawTick);
-
-    if(!tick){
-
-        state.rejectedTicks++;
-
-        return;
-    }
-
-    state.validTicks++;
-    state.ticksReceived++;
-    state.lastQuote=tick.quote;
-    state.lastEpoch=tick.epoch;
-    state.lastDigit=tick.digit;
-    state.lastRealTickMs=Date.now();
-
-    $("latestQuote").textContent=
-        String(tick.quote);
-
-    $("latestEpoch").textContent=
-        String(tick.epoch);
-
-    $("lastDigit").textContent=
-        tick.digit;
-
-    /*
-      The incoming real tick resolves the prediction made
-      immediately before it.
-    */
-
-    resolvePendingPrediction(tick);
-
-    state.previousDigit=
-        state.savedDigits.length?
-        state.savedDigits[state.savedDigits.length-1]:
-        null;
-
-    state.savedDigits.push(tick.digit);
-
-    state.tickRecords.push({
-        epoch:tick.epoch,
-        quote:tick.quote,
-        symbol:tick.symbol,
-        digit:tick.digit
-    });
-
-    const maxSaved=num(
-        "maxSaved",
-        50000
-    );
-
-    if(state.savedDigits.length>maxSaved){
-
-        state.savedDigits=
-            state.savedDigits.slice(-maxSaved);
-    }
-
-    if(state.tickRecords.length>50000){
-
-        state.tickRecords=
-            state.tickRecords.slice(-50000);
-    }
-
-    /*
-      Save periodically, not every single tick.
-    */
-
-    if(state.ticksReceived%20===0){
-        saveLocal();
-    }
-
-    setStatus("LIVE DATA");
-
-    $("streamMode").textContent=
-        state.streamMode;
-
-    updateStats();
-
-    /*
-      After enough data has arrived, create a new prediction
-      for the NEXT real tick.
-    */
-
-    generatePrediction();
-}
-
-
-/* ============================================================
-   HANDLE WEBSOCKET MESSAGE
-   ============================================================ */
-
-function handleMessage(event){
-
-    let data;
-
-    try{
-        data=JSON.parse(event.data);
-    }catch(e){
-        log("Received non-JSON WebSocket message.","warn");
-        return;
-    }
-
-    /*
-      API errors
-    */
-
-    if(data.error){
-
-        log(
-            "Deriv API error: "+
-            (data.error.message || "Unknown error"),
-            "bad"
-        );
-
-        return;
-    }
-
-    /*
-      Tick response
-    */
-
-    if(data.tick){
-
-        processTick(data.tick);
-
-        return;
-    }
-
-    /*
-      Historical tick response
-    */
-
-    if(data.history){
-
-        handleHistory(data.history);
-
-        return;
-    }
-
-    /*
-      Active symbols response
-    */
-
-    if(data.active_symbols){
-
-        log(
-            `Active symbols received: ${data.active_symbols.length}`,
-            "info"
-        );
-
-        return;
-    }
-
-    /*
-      Subscription confirmation
-    */
-
-    if(data.subscription){
-
-        state.streamSubscribed=true;
-
-        log(
-            "Live tick subscription confirmed.",
-            "good"
-        );
-
-        return;
-    }
+/*
+-----------------------------------------------------------
+STATUS
+-----------------------------------------------------------
+*/
+
+function setStatus(text,live=false){
+
+$("status")
+.classList
+.toggle("live",live);
+
+$("status")
+.querySelector("span")
+.textContent=text;
 
 }
 
 
-/* ============================================================
-   HANDLE HISTORY
-   ============================================================ */
+/*
+-----------------------------------------------------------
+GET LAST DIGIT
+-----------------------------------------------------------
+*/
 
-function handleHistory(history){
+function digitFromQuote(q){
 
-    if(!history){
-        return;
-    }
+const s=String(q);
 
-    let prices=
-        Array.isArray(history.prices)?
-        history.prices:
-        [];
+const clean=
+s.replace(/[^0-9]/g,"");
 
-    let times=
-        Array.isArray(history.times)?
-        history.times:
-        [];
-
-    /*
-      Some responses may return pip-like numeric values.
-      We use the returned quote representation only.
-    */
-
-    let added=0;
-
-    for(let i=0;i<prices.length;i++){
-
-        const quote=prices[i];
-
-        const digit=
-            getLastDigitFromQuote(quote);
-
-        const epoch=
-            Number(times[i]);
-
-        if(
-            !Number.isInteger(digit) ||
-            digit<0 ||
-            digit>9 ||
-            !Number.isFinite(epoch)
-        ){
-            state.rejectedTicks++;
-            continue;
-        }
-
-        state.savedDigits.push(digit);
-
-        state.tickRecords.push({
-            epoch,
-            quote:Number(quote),
-            symbol:state.selectedSymbol,
-            digit
-        });
-
-        added++;
-    }
-
-    const maxSaved=num(
-        "maxSaved",
-        50000
-    );
-
-    state.savedDigits=
-        state.savedDigits.slice(-maxSaved);
-
-    state.tickRecords=
-        state.tickRecords.slice(-50000);
-
-    state.historyLoaded+=added;
-
-    log(
-        `Loaded ${added} verified historical ticks.`,
-        "good"
-    );
-
-    saveLocal();
-
-    updateStats();
-
-    /*
-      After history is ready, request live stream.
-    */
-
-    subscribeTicks();
-}
-
-
-/* ============================================================
-   CONNECT WEBSOCKET
-   ============================================================ */
-
-function connect(){
-
-    stopSocket(false);
-
-    setStatus("CONNECTING TO DERIV");
-
-    state.endpointStatus="Connecting";
-
-    const endpoint=
-        state.endpoints[state.wsEndpointIndex];
-
-    $("endpointStatus").textContent=
-        endpoint;
-
-    log(
-        "Connecting to "+endpoint,
-        "info"
-    );
-
-    let ws;
-
-    try{
-        ws=new WebSocket(endpoint);
-    }catch(e){
-
-        log(
-            "WebSocket creation failed: "+e.message,
-            "bad"
-        );
-
-        tryNextEndpoint();
-
-        return;
-    }
-
-    state.ws=ws;
-
-    ws.onopen=()=>{
-
-        state.connected=true;
-
-        state.streamMode="WEBSOCKET";
-
-        $("streamMode").textContent=
-            "WEBSOCKET";
-
-        setStatus("LIVE DATA");
-
-        $("backgroundStatus").textContent=
-            "RUNNING IN THIS BROWSER";
-
-        log(
-            "WebSocket connected.",
-            "good"
-        );
-
-        requestHistory();
-
-        startHeartbeat();
-
-    };
-
-
-    ws.onmessage=handleMessage;
-
-
-    ws.onerror=()=>{
-
-        log(
-            "WebSocket error.",
-            "bad"
-        );
-
-    };
-
-
-    ws.onclose=()=>{
-
-        state.connected=false;
-        state.streamSubscribed=false;
-
-        $("diagSocket").textContent=
-            "Closed";
-
-        setPredictionOffline(
-            "DATA OFFLINE"
-        );
-
-        setStatus("DATA OFFLINE");
-
-        $("backgroundStatus").textContent=
-            "OFFLINE";
-
-        log(
-            "WebSocket connection closed.",
-            "warn"
-        );
-
-        /*
-          Automatically try the next endpoint only while
-          the user has not explicitly stopped the engine.
-        */
-
-        if(state.liveStartTime){
-
-            state.diagnostics.reconnects++;
-
-            state.reconnectTimer=setTimeout(
-                ()=>{
-                    tryNextEndpoint();
-                },
-                3000
-            );
-        }
-    };
+return clean
+?Number(clean[clean.length-1])
+:null;
 
 }
 
 
-/* ============================================================
-   NEXT ENDPOINT
-   ============================================================ */
+/*
+-----------------------------------------------------------
+PERCENTAGE FORMAT
+-----------------------------------------------------------
+*/
 
-function tryNextEndpoint(){
+function fmtPct(x){
 
-    if(!state.liveStartTime){
-        return;
-    }
+return Number.isFinite(x)
+?((x*100).toFixed(2)+"%")
+:"—";
 
-    state.wsEndpointIndex++;
-
-    if(
-        state.wsEndpointIndex>=
-        state.endpoints.length
-    ){
-
-        state.wsEndpointIndex=0;
-
-        log(
-            "All WebSocket endpoints attempted. Retrying.",
-            "warn"
-        );
-    }
-
-    connect();
 }
 
 
-/* ============================================================
-   STOP SOCKET
-   ============================================================ */
+/*
+-----------------------------------------------------------
+TIME FORMAT
+-----------------------------------------------------------
+*/
 
-function stopSocket(clearLive=true){
+function nowTime(epoch){
 
-    if(state.reconnectTimer){
+return new Date(epoch*1000)
+.toLocaleTimeString(
+[],
+{
+hour:"2-digit",
+minute:"2-digit",
+second:"2-digit"
+}
+);
 
-        clearTimeout(
-            state.reconnectTimer
-        );
-
-        state.reconnectTimer=null;
-    }
-
-    if(state.heartbeatTimer){
-
-        clearInterval(
-            state.heartbeatTimer
-        );
-
-        state.heartbeatTimer=null;
-    }
-
-    if(state.ws){
-
-        try{
-            state.ws.close();
-        }catch(e){}
-
-        state.ws=null;
-    }
-
-    state.connected=false;
-    state.streamSubscribed=false;
-
-    if(clearLive){
-        state.liveStartTime=null;
-        state.streamMode="OFFLINE";
-
-        $("streamMode").textContent=
-            "OFFLINE";
-
-        $("backgroundStatus").textContent=
-            "OFFLINE";
-
-        setStatus("DATA OFFLINE");
-
-        setPredictionOffline(
-            "DATA OFFLINE"
-        );
-
-        log(
-            "Live engine stopped.",
-            "warn"
-        );
-    }
 }
 
 
-/* ============================================================
-   HISTORY REQUEST
-   ============================================================ */
+/*
+-----------------------------------------------------------
+MEAN
+-----------------------------------------------------------
+*/
 
-function requestHistory(){
+function mean(arr){
 
-    if(!state.ws){
-        return;
-    }
+return arr.length
+?arr.reduce((a,b)=>a+b,0)/arr.length
+:0;
 
-    if(
-        state.ws.readyState!==
-        WebSocket.OPEN
-    ){
-        return;
-    }
-
-    const count=Math.max(
-        100,
-        Math.min(
-            10000,
-            num("historyCount",1000)
-        )
-    );
-
-    const request={
-        ticks_history:state.selectedSymbol,
-        count:count,
-        end:"latest",
-        style:"ticks"
-    };
-
-    /*
-      app_id is used only for endpoints that accept it.
-      The current public market-data endpoint is public.
-    */
-
-    try{
-
-        state.diagnostics.historyRequests++;
-
-        state.ws.send(
-            JSON.stringify(request)
-        );
-
-        log(
-            `Requested ${count} historical ticks for ${state.selectedSymbol}.`,
-            "info"
-        );
-
-    }catch(e){
-
-        log(
-            "History request failed: "+e.message,
-            "bad"
-        );
-
-    }
 }
 
 
-/* ============================================================
-   LIVE TICK SUBSCRIPTION
-   ============================================================ */
+/*
+-----------------------------------------------------------
+CLAMP
+-----------------------------------------------------------
+*/
 
-function subscribeTicks(){
+function clamp(x,a,b){
 
-    if(!state.ws){
-        return;
-    }
+return Math.max(
+a,
+Math.min(b,x)
+);
 
-    if(
-        state.ws.readyState!==
-        WebSocket.OPEN
-    ){
-        return;
-    }
-
-    const request={
-        ticks:state.selectedSymbol,
-        subscribe:1
-    };
-
-    try{
-
-        state.diagnostics.tickRequests++;
-
-        state.ws.send(
-            JSON.stringify(request)
-        );
-
-        log(
-            `Requesting live ticks for ${state.selectedSymbol}.`,
-            "info"
-        );
-
-    }catch(e){
-
-        log(
-            "Tick subscription failed: "+e.message,
-            "bad"
-        );
-    }
 }
 
 
-/* ============================================================
-   HEARTBEAT
-   ============================================================ */
+/*
+===========================================================
+INDEXEDDB
+===========================================================
+*/
 
-function startHeartbeat(){
+function openDB(){
 
-    if(state.heartbeatTimer){
-        clearInterval(state.heartbeatTimer);
-    }
+return new Promise(
+(resolve,reject)=>{
 
-    state.heartbeatTimer=setInterval(()=>{
+const r=
+indexedDB.open(
+DB_NAME,
+DB_VERSION
+);
 
-        if(
-            state.ws &&
-            state.ws.readyState===
-            WebSocket.OPEN
-        ){
+r.onupgradeneeded=()=>{
 
-            try{
+const d=r.result;
 
-                state.ws.send(
-                    JSON.stringify({
-                        ping:1
-                    })
-                );
 
-            }catch(e){}
-        }
+/*
+TICKS STORE
+*/
 
-    },30000);
+if(
+!d.objectStoreNames
+.contains("ticks")
+){
+
+const s=
+d.createObjectStore(
+"ticks",
+{
+keyPath:"id",
+autoIncrement:true
+}
+);
+
+s.createIndex(
+"symbol",
+"symbol"
+);
+
+s.createIndex(
+"time",
+"epoch"
+);
+
 }
 
 
-/* ============================================================
-   DATA STALE CHECK
-   ============================================================ */
+/*
+PREDICTIONS STORE
+*/
 
-function startStaleMonitor(){
+if(
+!d.objectStoreNames
+.contains("predictions")
+){
 
-    if(state.staleTimer){
-        clearInterval(state.staleTimer);
-    }
+const s=
+d.createObjectStore(
+"predictions",
+{
+keyPath:"id",
+autoIncrement:true
+}
+);
 
-    state.staleTimer=setInterval(()=>{
+s.createIndex(
+"symbol",
+"symbol"
+);
 
-        if(
-            state.connected &&
-            state.lastRealTickMs
-        ){
+s.createIndex(
+"epoch",
+"epoch"
+);
 
-            const age=
-                Date.now()-
-                state.lastRealTickMs;
+}
 
-            if(age>5000){
+};
 
-                setStatus(
-                    "DATA OFFLINE"
-                );
 
-                setPredictionOffline(
-                    "DATA OFFLINE"
-                );
+r.onsuccess=()=>{
 
-                log(
-                    `No real tick received for ${(age/1000).toFixed(1)} seconds. Predictions stopped.`,
-                    "warn"
-                );
-            }
+db=r.result;
 
-        }
+resolve(db);
 
-    },1000);
+};
+
+
+r.onerror=()=>{
+
+reject(r.error);
+
+};
+
+});
+
 }
 
 
-/* ============================================================
-   COUNTDOWN
-   ============================================================ */
+/*
+-----------------------------------------------------------
+DATABASE TRANSACTION
+-----------------------------------------------------------
+*/
 
-function updateCountdown(){
+function dbTx(
+store,
+mode="readonly"
+){
 
-    const now=Date.now();
+return db
+.transaction(
+store,
+mode
+)
+.objectStore(store);
 
-    const next=
-        Math.ceil(
-            now/10000
-        )*10000;
-
-    const remaining=
-        Math.max(
-            0,
-            next-now
-        );
-
-    $("countdown").textContent=
-        (remaining/1000).toFixed(1)+"s";
 }
 
 
-/* ============================================================
-   ALERTS
-   ============================================================ */
+/*
+-----------------------------------------------------------
+SAVE TICK
+-----------------------------------------------------------
+*/
 
-function showAlert(title,message){
+function saveTick(t){
 
-    $("alertTitle").textContent=title;
+if(!db)return;
 
-    $("alertMessage").textContent=message;
+dbTx(
+"ticks",
+"readwrite"
+).add(t);
 
-    const box=$("alertBox");
-
-    box.classList.add("show");
-
-    setTimeout(()=>{
-        box.classList.remove("show");
-    },5000);
 }
 
 
-function beep(){
+/*
+-----------------------------------------------------------
+SAVE PREDICTION
+-----------------------------------------------------------
+*/
 
-    if(!$("sound").checked){
-        return;
-    }
+function savePrediction(p){
 
-    try{
+if(!db)return;
 
-        if(!state.audioContext){
+dbTx(
+"predictions",
+"readwrite"
+).add(p);
 
-            state.audioContext=
-                new (
-                    window.AudioContext ||
-                    window.webkitAudioContext
-                )();
-        }
-
-        const ctx=state.audioContext;
-
-        const osc=ctx.createOscillator();
-
-        const gain=ctx.createGain();
-
-        osc.frequency.value=800;
-
-        gain.gain.value=.04;
-
-        osc.connect(gain);
-
-        gain.connect(ctx.destination);
-
-        osc.start();
-
-        osc.stop(
-            ctx.currentTime+.15
-        );
-
-    }catch(e){}
 }
 
 
-/* ============================================================
-   WALK-FORWARD BACKTEST
-   ============================================================ */
+/*
+===========================================================
+LOAD SAVED DATA
+===========================================================
+*/
 
-function runBacktest(){
+function loadSaved(){
 
-    const data=
-        state.savedDigits.slice();
+return new Promise(resolve=>{
 
-    if(data.length<150){
+if(!db){
 
-        $("btDetails").textContent=
-            "Not enough real historical digits. Load more history first.";
+resolve();
 
-        log(
-            "Backtest stopped: insufficient historical data.",
-            "warn"
-        );
+return;
 
-        return;
-    }
-
-    /*
-      Strict chronological walk-forward.
-
-      We train using all data before the prediction point.
-      Then predict the current next digit.
-      Only AFTER the prediction do we reveal the actual digit.
-    */
-
-    const minimumTrain=Math.min(
-        100,
-        Math.max(
-            30,
-            Math.floor(data.length*.25)
-        )
-    );
-
-    const testStart=minimumTrain;
-
-    let samples=0;
-    let wins=0;
-    let skipped=0;
-
-    const maxTests=Math.min(
-        5000,
-        data.length-testStart-1
-    );
-
-    /*
-      We create a separate temporary result list so the live
-      learning statistics are not polluted by backtest outcomes.
-    */
-
-    for(
-        let i=testStart;
-        i<testStart+maxTests;
-        i++
-    ){
-
-        const train=data.slice(
-            Math.max(
-                0,
-                i-num("modelWindow",2000)
-            ),
-            i
-        );
-
-        if(train.length<30){
-            skipped++;
-            continue;
-        }
-
-        const prediction=
-            choosePrediction(train);
-
-        if(!prediction.valid){
-            skipped++;
-            continue;
-        }
-
-        const actual=data[i];
-
-        samples++;
-
-        if(
-            prediction.digit===
-            actual
-        ){
-            wins++;
-        }
-    }
-
-    const losses=samples-wins;
-
-    $("btSamples").textContent=samples;
-
-    $("btWins").textContent=wins;
-
-    $("btLosses").textContent=losses;
-
-    $("btAccuracy").textContent=
-        samples?
-        ((wins/samples)*100).toFixed(2)+"%":
-        "—";
-
-    $("btDetails").textContent=
-        `Walk-forward test completed. `+
-        `Train-before-test chronology preserved. `+
-        `${skipped} observations produced NO VALID SIGNAL.`;
-
-    log(
-        `Walk-forward backtest: ${wins}/${samples} = `+
-        `${samples?((wins/samples)*100).toFixed(2):0}%`,
-        "good"
-    );
 }
 
 
-/* ============================================================
-   EXPORT
-   ============================================================ */
+const arr=[];
 
-function exportData(){
 
-    const payload={
+const r=
+dbTx("ticks")
+.index("symbol")
+.openCursor(
+IDBKeyRange.only(currentSymbol),
+"prev"
+);
 
-        version:"Deriv Prediction Lab V4",
 
-        exportedAt:
-            new Date().toISOString(),
+r.onsuccess=e=>{
 
-        symbol:state.selectedSymbol,
+const c=e.target.result;
 
-        savedDigits:state.savedDigits,
 
-        tickRecords:state.tickRecords,
+if(
+c &&
+arr.length<MAX_TICKS
+){
 
-        predictions:state.predictions,
+arr.push(c.value);
 
-        learningResults:state.learningResults,
+c.continue();
 
-        champion:state.champion,
+}
 
-        challenger:state.challenger,
+else{
 
-        modelWeights:state.modelWeights
+ticks=
+arr.sort(
+(a,b)=>a.epoch-b.epoch
+);
 
-    };
 
-    const blob=new Blob(
-        [
-            JSON.stringify(
-                payload,
-                null,
-                2
-            )
-        ],
-        {
-            type:"application/json"
-        }
-    );
+const pa=[];
 
-    const url=
-        URL.createObjectURL(blob);
 
-    const a=document.createElement("a");
+const pcur=
+dbTx("predictions")
+.index("symbol")
+.openCursor(
+IDBKeyRange.only(currentSymbol),
+"prev"
+);
 
-    a.href=url;
 
-    a.download=
-        `deriv_prediction_lab_v4_${state.selectedSymbol}.json`;
+pcur.onsuccess=ev=>{
 
-    a.click();
+const c2=
+ev.target.result;
 
-    URL.revokeObjectURL(url);
 
-    log(
-        "Learning data exported.",
-        "good"
-    );
+if(
+c2 &&
+pa.length<300
+){
+
+pa.push(c2.value);
+
+c2.continue();
+
+}
+
+else{
+
+predictions=
+pa.sort(
+(a,b)=>b.epoch-a.epoch
+);
+
+renderAll();
+
+resolve();
+
+}
+
+};
+
+}
+
+};
+
+});
+
 }
 
 
-/* ============================================================
-   IMPORT
-   ============================================================ */
-
-function importData(file){
-
-    if(!file){
-        return;
-    }
-
-    const reader=new FileReader();
-
-    reader.onload=()=>{
-
-        try{
-
-            const data=
-                JSON.parse(
-                    reader.result
-                );
-
-            if(
-                !data ||
-                !Array.isArray(
-                    data.savedDigits
-                )
-            ){
-                throw new Error(
-                    "Invalid V4 learning file"
-                );
-            }
-
-            state.savedDigits=
-                data.savedDigits
-                .filter(
-                    d=>
-                    Number.isInteger(d) &&
-                    d>=0 &&
-                    d<=9
-                )
-                .slice(
-                    -num("maxSaved",50000)
-                );
-
-            if(Array.isArray(data.tickRecords)){
-                state.tickRecords=
-                    data.tickRecords.slice(-50000);
-            }
-
-            if(Array.isArray(data.predictions)){
-                state.predictions=
-                    data.predictions.slice(-5000);
-            }
-
-            if(Array.isArray(data.learningResults)){
-                state.learningResults=
-                    data.learningResults.slice(-5000);
-            }
-
-            if(data.champion){
-                state.champion=data.champion;
-            }
-
-            if(data.challenger){
-                state.challenger=data.challenger;
-            }
-
-            if(data.modelWeights){
-                state.modelWeights={
-                    ...state.modelWeights,
-                    ...data.modelWeights
-                };
-            }
-
-            saveLocal();
-
-            updateStats();
-
-            log(
-                "Learning data imported successfully.",
-                "good"
-            );
-
-        }catch(e){
-
-            log(
-                "Import failed: "+e.message,
-                "bad"
-            );
-        }
-    };
-
-    reader.readAsText(file);
-}
-
-
-/* ============================================================
-   CLEAR
-   ============================================================ */
+/*
+===========================================================
+CLEAR SAVED DATA
+===========================================================
+*/
 
 function clearSaved(){
 
-    const symbol=val("symbol");
+if(!db)return;
 
-    const yes=
-        confirm(
-            `Delete saved V4 data for ${symbol}?`
-        );
 
-    if(!yes){
-        return;
-    }
+db.transaction(
+["ticks","predictions"],
+"readwrite"
+)
+.objectStore("ticks")
+.clear();
 
-    try{
 
-        localStorage.removeItem(
-            storageKey(symbol)
-        );
+db.transaction(
+["ticks","predictions"],
+"readwrite"
+)
+.objectStore("predictions")
+.clear();
 
-        localStorage.removeItem(
-            learningKey(symbol)
-        );
 
-    }catch(e){}
+ticks=[];
 
-    state.savedDigits=[];
-    state.tickRecords=[];
-    state.predictions=[];
-    state.learningResults=[];
+predictions=[];
 
-    state.historyLoaded=0;
-    state.ticksReceived=0;
-    state.validTicks=0;
-    state.rejectedTicks=0;
-    state.predictionsGenerated=0;
-    state.predictionsSkipped=0;
-    state.resolvedPredictions=0;
+pendingPrediction=null;
 
-    state.pendingPrediction=null;
+champion={
+wins:0,
+total:0
+};
 
-    updateStats();
+challenger={
+wins:0,
+total:0
+};
 
-    log(
-        "Saved V4 data cleared.",
-        "warn"
-    );
+renderAll();
+
 }
 
 
-/* ============================================================
-   LOAD HISTORY BUTTON
-   ============================================================ */
+/*
+===========================================================
+DERIV HISTORY REQUEST
+===========================================================
+*/
 
-function loadHistory(){
+function requestHistory(){
 
-    loadLocal();
+send({
 
-    loadLearning();
+ticks_history:currentSymbol,
 
-    if(
-        state.ws &&
-        state.ws.readyState===
-        WebSocket.OPEN
-    ){
+end:"latest",
 
-        requestHistory();
+style:"ticks",
 
-    }else{
+count:1000,
 
-        log(
-            "History loaded locally. Start Live to request fresh Deriv history.",
-            "info"
-        );
-    }
+subscribe:0,
+
+req_id:++reqId
+
+});
+
 }
 
 
-/* ============================================================
-   START LIVE
-   ============================================================ */
+/*
+===========================================================
+LIVE TICK SUBSCRIPTION
+===========================================================
+*/
 
-function startLive(){
+function subscribeTicks(){
 
-    state.selectedSymbol=
-        val("symbol");
+send({
 
-    state.liveStartTime=
-        Date.now();
+ticks:currentSymbol,
 
-    state.wsEndpointIndex=0;
+subscribe:1,
 
-    loadLocal();
+req_id:++reqId
 
-    loadLearning();
+});
 
-    log(
-        `Starting V4 engine for ${state.selectedSymbol}.`,
-        "good"
-    );
-
-    setStatus(
-        "CONNECTING TO DERIV"
-    );
-
-    connect();
 }
 
 
-/* ============================================================
-   STOP LIVE
-   ============================================================ */
+/*
+===========================================================
+ACTIVE SYMBOLS
+===========================================================
+*/
 
-function stopLive(){
+function requestActiveSymbols(){
 
-    stopSocket(true);
+send({
 
-    if(state.pendingPrediction){
+active_symbols:"brief",
 
-        /*
-          Do not mark a prediction as loss when the user stops.
-          It remains unresolved because no verified next tick
-          arrived.
-        */
+req_id:++reqId
 
-        log(
-            "Pending prediction left unresolved; no artificial result recorded.",
-            "warn"
-        );
+});
 
-        state.pendingPrediction=null;
-    }
-
-    saveLocal();
 }
 
 
-/* ============================================================
-   EVENT LISTENERS
-   ============================================================ */
+/*
+===========================================================
+CONNECT
+===========================================================
+*/
 
-$("loadBtn").addEventListener(
-    "click",
-    loadHistory
-);
+function connect(){
 
-$("startBtn").addEventListener(
-    "click",
-    startLive
-);
+intentionalClose=false;
 
-$("stopBtn").addEventListener(
-    "click",
-    stopLive
-);
 
-$("clearBtn").addEventListener(
-    "click",
-    clearSaved
-);
+if(ws){
 
-$("alertBtn").addEventListener(
-    "click",
-    ()=>{
+try{
 
-        state.alertsEnabled=
-            !state.alertsEnabled;
+ws.close();
 
-        $("alertBtn").textContent=
-            state.alertsEnabled?
-            "Alerts Enabled":
-            "Enable Alerts";
+}catch(e){}
 
-        log(
-            state.alertsEnabled?
-            "Alerts enabled.":
-            "Alerts disabled.",
-            "info"
-        );
-    }
-);
+}
 
-$("testAlertBtn").addEventListener(
-    "click",
-    ()=>{
 
-        showAlert(
-            "Test Alert",
-            "Deriv Prediction Lab V4 alert system is working."
-        );
-
-        beep();
-    }
-);
-
-$("backtestBtn").addEventListener(
-    "click",
-    runBacktest
-);
-
-$("exportBtn").addEventListener(
-    "click",
-    exportData
-);
-
-$("importBtn").addEventListener(
-    "click",
-    ()=>$("importFile").click()
-);
-
-$("importFile").addEventListener(
-    "change",
-    event=>{
-        importData(
-            event.target.files[0]
-        );
-        event.target.value="";
-    }
-);
-
-$("symbol").addEventListener(
-    "change",
-    ()=>{
-
-        if(state.liveStartTime){
-
-            stopLive();
-
-            setTimeout(
-                startLive,
-                500
-            );
-
-        }else{
-
-            loadLocal();
-
-            loadLearning();
-
-            updateStats();
-        }
-    }
+setStatus(
+"CONNECTING…",
+false
 );
 
 
-/* ============================================================
-   PAGE VISIBILITY
-   ============================================================ */
-
-document.addEventListener(
-    "visibilitychange",
-    ()=>{
-
-        if(document.hidden){
-
-            log(
-                "Browser tab hidden. Engine can only continue while this page remains running.",
-                "warn"
-            );
-
-        }else{
-
-            log(
-                "Browser tab visible again.",
-                "info"
-            );
-
-            /*
-              Immediately verify freshness.
-            */
-
-            if(
-                state.lastRealTickMs &&
-                Date.now()-state.lastRealTickMs>5000
-            ){
-
-                setStatus(
-                    "DATA OFFLINE"
-                );
-
-                setPredictionOffline(
-                    "DATA OFFLINE"
-                );
-            }
-        }
-    }
+ws=
+new WebSocket(
+WS_URL
 );
 
 
-/* ============================================================
-   ONLINE / OFFLINE
-   ============================================================ */
+ws.onopen=()=>{
 
-window.addEventListener(
-    "offline",
-    ()=>{
-
-        setStatus(
-            "DATA OFFLINE"
-        );
-
-        setPredictionOffline(
-            "DATA OFFLINE"
-        );
-
-        log(
-            "Browser network connection is offline.",
-            "bad"
-        );
-    }
+setStatus(
+"CONNECTED — LOADING DATA",
+true
 );
 
-window.addEventListener(
-    "online",
-    ()=>{
+requestActiveSymbols();
 
-        log(
-            "Browser network connection restored.",
-            "good"
-        );
+requestHistory();
 
-        if(state.liveStartTime){
+subscribeTicks();
 
-            tryNextEndpoint();
-        }
-    }
+};
+
+
+ws.onmessage=e=>{
+
+let d;
+
+
+try{
+
+d=JSON.parse(e.data);
+
+}catch(_){
+
+return;
+
+}
+
+
+if(d.error){
+
+setStatus(
+"DATA OFFLINE — API ERROR",
+false
+);
+
+return;
+
+}
+
+
+if(
+d.msg_type==="active_symbols"
+){
+
+handleSymbols(
+d.active_symbols||[]
+);
+
+}
+
+
+if(
+d.msg_type==="history"
+){
+
+handleHistory(d);
+
+}
+
+
+if(
+d.msg_type==="tick"
+){
+
+handleTick(d.tick);
+
+}
+
+};
+
+
+ws.onerror=()=>{
+
+setStatus(
+"DATA OFFLINE — CONNECTION ERROR",
+false
+);
+
+};
+
+
+ws.onclose=()=>{
+
+setStatus(
+"DATA OFFLINE",
+false
 );
 
 
-/* ============================================================
-   CLOCK
-   ============================================================ */
+if(!intentionalClose){
+
+clearTimeout(
+reconnectTimer
+);
+
+
+reconnectTimer=
+setTimeout(
+connect,
+4000
+);
+
+}
+
+};
+
+}
+
+
+/*
+===========================================================
+HANDLE SYMBOLS
+===========================================================
+*/
+
+function handleSymbols(list){
+
+const items=
+list
+.map(x=>({
+
+symbol:
+x.underlying_symbol ||
+x.symbol,
+
+name:
+x.underlying_symbol_name ||
+x.display_name ||
+x.symbol
+
+}))
+.filter(x=>x.symbol);
+
+
+const synth=
+items.filter(x=>
+
+/volatility|vix/i.test(x.name)
+
+||
+
+/^1HZ\d+V$/i.test(x.symbol)
+
+||
+
+/^R_\d+$/i.test(x.symbol)
+
+);
+
+
+if(!synth.length)return;
+
+
+const merged=[...synth];
+
+
+for(
+const [s,n]
+of fallbackSymbols
+){
+
+if(
+!merged.some(
+x=>x.symbol===s
+)
+){
+
+merged.push({
+symbol:s,
+name:n
+});
+
+}
+
+}
+
+
+$("symbol").innerHTML=
+merged.map(x=>
+
+`<option value="${x.symbol}">
+${x.name} (${x.symbol})
+</option>`
+
+).join("");
+
+
+$("symbol").value=
+currentSymbol;
+
+}
+
+
+/*
+===========================================================
+HANDLE HISTORY
+===========================================================
+*/
+
+function handleHistory(d){
+
+const h=d.history;
+
+
+if(
+!h ||
+!Array.isArray(h.prices) ||
+!Array.isArray(h.times)
+)return;
+
+
+const loaded=[];
+
+
+for(
+let i=0;
+i<
+Math.min(
+h.prices.length,
+h.times.length
+);
+i++
+){
+
+const quote=
+Number(h.prices[i]);
+
+const epoch=
+Number(h.times[i]);
+
+const digit=
+digitFromQuote(quote);
+
+
+if(
+Number.isFinite(quote) &&
+Number.isFinite(epoch) &&
+digit!==null
+){
+
+loaded.push({
+
+symbol:currentSymbol,
+
+quote,
+
+epoch,
+
+digit
+
+});
+
+}
+
+}
+
+
+ticks=
+loaded.slice(
+-MAX_TICKS
+);
+
+
+for(
+const t of ticks
+){
+
+saveTick(t);
+
+}
+
+
+renderAll();
+
+
+setStatus(
+"LIVE DATA",
+true
+);
+
+}
+
+
+/*
+===========================================================
+HANDLE LIVE TICK
+===========================================================
+*/
+
+function handleTick(t){
+
+if(
+!t ||
+t.symbol!==currentSymbol
+)return;
+
+
+const quote=
+Number(t.quote);
+
+const epoch=
+Number(t.epoch);
+
+const digit=
+digitFromQuote(quote);
+
+
+if(
+!Number.isFinite(quote) ||
+!Number.isFinite(epoch) ||
+digit===null
+)return;
+
+
+const previous=
+ticks[ticks.length-1];
+
+
+const record={
+
+symbol:currentSymbol,
+
+quote,
+
+epoch,
+
+digit,
+
+interval:
+previous
+?Math.max(
+0,
+epoch-previous.epoch
+)
+:null,
+
+previousDigit:
+previous
+?previous.digit
+:null
+
+};
+
+
+/*
+IMPORTANT:
+
+Resolve the prediction using
+the NEXT REAL TICK.
+*/
+
+if(pendingPrediction){
+
+resolvePrediction(
+pendingPrediction,
+record
+);
+
+}
+
+
+ticks.push(record);
+
+
+if(
+ticks.length>MAX_TICKS
+){
+
+ticks=
+ticks.slice(-MAX_TICKS);
+
+}
+
+
+saveTick(record);
+
+
+lastTickAt=
+Date.now();
+
+
+setStatus(
+"LIVE DATA",
+true
+);
+
+
+/*
+Only analyze after enough
+real ticks exist.
+*/
+
+if(
+ticks.length>=MIN_TICKS
+){
+
+pendingPrediction=
+createPrediction();
+
+}
+
+
+renderAll();
+
+}
+
+
+/*
+===========================================================
+GET WINDOW DIGITS
+===========================================================
+*/
+
+function windowDigits(n){
+
+return ticks
+.slice(-n)
+.map(x=>x.digit)
+.filter(
+x=>Number.isInteger(x)
+);
+
+}
+
+
+/*
+===========================================================
+FREQUENCY MODEL
+===========================================================
+*/
+
+function freqModel(n){
+
+const a=
+windowDigits(n);
+
+
+/*
+Laplace smoothing
+prevents zero probabilities.
+*/
+
+const c=
+Array(10).fill(1);
+
+
+for(
+const d of a
+){
+
+c[d]++;
+
+}
+
+
+const total=
+c.reduce(
+(x,y)=>x+y,
+0
+);
+
+
+return c.map(
+x=>x/total
+);
+
+}
+
+
+/*
+===========================================================
+RECENCY MODEL
+===========================================================
+*/
+
+function recencyModel(n){
+
+const a=
+windowDigits(n);
+
+
+const c=
+Array(10).fill(.7);
+
+
+let weight=1;
+
+
+for(
+let i=a.length-1;
+i>=0;
+i--,
+weight*=.985
+){
+
+c[a[i]]+=weight;
+
+}
+
+
+const total=
+c.reduce(
+(x,y)=>x+y,
+0
+);
+
+
+return c.map(
+x=>x/total
+);
+
+}
+
+
+/*
+===========================================================
+TRANSITION MODEL
+===========================================================
+*/
+
+function transitionModel(){
+
+const last=
+ticks[ticks.length-1]?.digit;
+
+
+if(!Number.isInteger(last))
+return null;
+
+
+const c=
+Array(10).fill(1);
+
+
+let seen=0;
+
+
+for(
+let i=1;
+i<ticks.length;
+i++
+){
+
+if(
+ticks[i-1].digit===last
+){
+
+c[ticks[i].digit]++;
+
+seen++;
+
+}
+
+}
+
+
+if(seen<12)
+return null;
+
+
+const total=
+c.reduce(
+(a,b)=>a+b,
+0
+);
+
+
+return c.map(
+x=>x/total
+);
+
+}
+
+
+/*
+===========================================================
+NORMALIZE
+===========================================================
+*/
+
+function normalize(arr){
+
+const s=
+arr.reduce(
+(a,b)=>a+b,
+0
+);
+
+
+return s
+?arr.map(x=>x/s)
+:Array(10).fill(.1);
+
+}
+
+
+/*
+===========================================================
+ENSEMBLE
+===========================================================
+*/
+
+function ensemble(){
+
+const f50=
+freqModel(50);
+
+const f200=
+freqModel(200);
+
+const f800=
+freqModel(800);
+
+const r50=
+recencyModel(50);
+
+const r200=
+recencyModel(200);
+
+const tr=
+transitionModel();
+
+
+/*
+Adaptive champion/challenger
+weights.
+*/
+
+const cScore=
+champion.total>=20
+?champion.wins/champion.total
+:.5;
+
+
+const chScore=
+challenger.total>=20
+?challenger.wins/challenger.total
+:.5;
+
+
+const challengerWeight=
+clamp(
+.25+(chScore-cScore)*.8,
+.15,
+.55
+);
+
+
+const baseWeight=
+1-challengerWeight;
+
+
+const out=
+Array(10).fill(0);
+
+
+for(
+let d=0;
+d<10;
+d++
+){
+
+const base=
+.28*f200[d]
++
+.17*f800[d]
++
+.15*r200[d];
+
+
+const short=
+.20*f50[d]
++
+.20*r50[d];
+
+
+const trans=
+tr
+?tr[d]*.12
+:0;
+
+
+out[d]=
+
+baseWeight*
+(
+base+
+short*.55
+)
+
++
+
+challengerWeight*
+(
+short*.45+
+trans
+);
+
+}
+
+
+return {
+
+probs:
+normalize(out),
+
+models:{
+
+freq50:f50,
+
+freq200:f200,
+
+recency50:r50,
+
+recency200:r200,
+
+transition:tr
+
+}
+
+};
+
+}
+
+
+/*
+===========================================================
+FIND LOWEST PROBABILITY DIGIT
+===========================================================
+*/
+
+function modelChoice(arr){
+
+let idx=0;
+
+
+for(
+let i=1;
+i<arr.length;
+i++
+){
+
+if(
+arr[i]<arr[idx]
+){
+
+idx=i;
+
+}
+
+}
+
+
+return idx;
+
+}
+
+
+/*
+===========================================================
+MODEL AGREEMENT
+===========================================================
+*/
+
+function agreementForDigit(
+d,
+models
+){
+
+const choices=[];
+
+
+for(
+const key
+of
+[
+"freq50",
+"freq200",
+"recency50",
+"recency200",
+"transition"
+]
+){
+
+const m=models[key];
+
+
+if(m)
+choices.push(
+modelChoice(m)
+);
+
+}
+
+
+if(!choices.length)
+return 0;
+
+
+return
+choices.filter(
+x=>x===d
+).length
+/
+choices.length;
+
+}
+
+
+/*
+===========================================================
+CREATE PREDICTION
+===========================================================
+*/
+
+function createPrediction(){
+
+if(
+ticks.length<MIN_TICKS
+)
+return null;
+
+
+const e=
+ensemble();
+
+
+const p=
+e.probs;
+
+
+/*
+For DIFFERS:
+choose the digit estimated
+least likely to occur.
+
+For MATCHES:
+choose the digit estimated
+most likely to occur.
+*/
+
+const d=
+
+objective==="DIFFERS"
+
+?
+
+modelChoice(p)
+
+:
+
+p.indexOf(
+Math.max(...p)
+);
+
+
+const pDigit=
+p[d];
+
+
+const pDiff=
+1-pDigit;
+
+
+const agree=
+agreementForDigit(
+d,
+e.models
+);
+
+
+let action="WAIT";
+
+let reason="";
+
+
+/*
+===========================================================
+DIFFERS GATE
+===========================================================
+*/
+
+if(
+objective==="DIFFERS"
+){
+
+if(
+
+pDiff>=MIN_CONFIDENCE &&
+
+(pDiff-.90)>=MIN_EDGE &&
+
+agree>=MIN_AGREEMENT
+
+){
+
+action="PREDICT";
+
+
+reason=
+
+`Excluded digit ${d} has estimated occurrence ${(pDigit*100).toFixed(2)}%; ensemble agrees across ${(agree*100).toFixed(0)}% of available models.`;
+
+}
+
+else{
+
+reason=
+
+`No sufficient edge. Estimated DIFFER ${(pDiff*100).toFixed(2)}%, model agreement ${(agree*100).toFixed(0)}%.`;
+
+}
+
+}
+
+
+/*
+===========================================================
+MATCHES GATE
+===========================================================
+*/
+
+else{
+
+const sorted=
+[...p].sort(
+(a,b)=>b-a
+);
+
+
+const margin=
+sorted[0]-sorted[1];
+
+
+if(
+
+pDigit>=.18 &&
+
+margin>=.04 &&
+
+agree>=MIN_AGREEMENT
+
+){
+
+action="PREDICT";
+
+
+reason=
+
+`Digit ${d} leads the calibrated ensemble with ${(pDigit*100).toFixed(2)}% estimated probability.`;
+
+}
+
+else{
+
+reason=
+
+`Exact-digit evidence is weak. Top probability ${(pDigit*100).toFixed(2)}%; agreement ${(agree*100).toFixed(0)}%.`;
+
+}
+
+}
+
+
+/*
+===========================================================
+PREDICTION OBJECT
+===========================================================
+*/
+
+const prediction={
+
+epoch:
+Math.floor(
+Date.now()/1000
+),
+
+symbol:
+currentSymbol,
+
+objective,
+
+target:d,
+
+probability:
+
+objective==="DIFFERS"
+?pDiff
+:pDigit,
+
+digitProbability:
+pDigit,
+
+agreement:
+agree,
+
+action,
+
+model:
+"adaptive 5-window ensemble",
+
+resolved:false
+
+};
+
+
+/*
+Only save actual predictions.
+
+WAIT is not counted
+as a prediction.
+*/
+
+if(
+action==="PREDICT"
+){
+
+savePrediction(
+prediction
+);
+
+
+predictions.unshift(
+prediction
+);
+
+
+predictions=
+predictions.slice(
+0,
+300
+);
+
+}
+
+
+return prediction;
+
+}
+
+
+/*
+===========================================================
+RESOLVE PREDICTION
+===========================================================
+*/
+
+function resolvePrediction(
+pred,
+actual
+){
+
+if(
+!pred ||
+pred.resolved ||
+pred.action!=="PREDICT"
+)
+return;
+
+
+pred.actual=
+actual.digit;
+
+
+pred.resolved=
+true;
+
+
+pred.result=
+
+objective==="DIFFERS"
+
+?
+
+actual.digit!==pred.target
+
+:
+
+actual.digit===pred.target;
+
+
+pred.resolvedAt=
+actual.epoch;
+
+
+/*
+Save verified result.
+*/
+
+savePrediction(
+pred
+);
+
+
+if(
+predictions[0] &&
+predictions[0].epoch===pred.epoch
+){
+
+Object.assign(
+predictions[0],
+pred
+);
+
+}
+
+
+/*
+===========================================================
+CHAMPION
+===========================================================
+*/
+
+if(
+objective==="DIFFERS"
+){
+
+champion.total++;
+
+
+if(pred.result)
+champion.wins++;
+
+
+/*
+===========================================================
+CHALLENGER
+===========================================================
+*/
+
+const r=
+freqModel(100);
+
+
+const alt=
+modelChoice(r);
+
+
+const altWin=
+actual.digit!==alt;
+
+
+challenger.total++;
+
+
+if(altWin)
+challenger.wins++;
+
+}
+
+else{
+
+champion.total++;
+
+
+if(pred.result)
+champion.wins++;
+
+
+const r=
+freqModel(100);
+
+
+const alt=
+r.indexOf(
+Math.max(...r)
+);
+
+
+challenger.total++;
+
+
+if(
+actual.digit===alt
+)
+challenger.wins++;
+
+}
+
+
+renderAll();
+
+}
+
+
+/*
+===========================================================
+GET RESOLVED PREDICTIONS
+===========================================================
+*/
+
+function getResolved(){
+
+return predictions.filter(
+x=>
+x.action==="PREDICT" &&
+x.resolved
+);
+
+}
+
+
+/*
+===========================================================
+RENDER EVERYTHING
+===========================================================
+*/
+
+function renderAll(){
+
+$("tickCount")
+.textContent=
+ticks.length.toLocaleString();
+
+
+$("lastDigit")
+.textContent=
+ticks.length
+?ticks[ticks.length-1].digit
+:"—";
+
+
+$("tickAge")
+.textContent=
+
+lastTickAt
+
+?
+
+Math.max(
+0,
+Math.round(
+(Date.now()-lastTickAt)/1000
+)
+)+"s"
+
+:
+
+"—";
+
+
+const r=
+getResolved();
+
+
+const wins=
+r.filter(
+x=>x.result
+).length;
+
+
+const losses=
+r.length-wins;
+
+
+$("resolved")
+.textContent=
+r.length;
+
+
+$("wins")
+.textContent=
+wins;
+
+
+$("losses")
+.textContent=
+losses;
+
+
+$("accuracy")
+.textContent=
+
+r.length
+?fmtPct(wins/r.length)
+:"—";
+
+
+const rr=
+r.slice(
+0,
+20
+);
+
+
+const rw=
+rr.filter(
+x=>x.result
+).length;
+
+
+$("recentAccuracy")
+.textContent=
+
+rr.length
+?fmtPct(rw/rr.length)
+:"—";
+
+
+/*
+===========================================================
+LEARNING STATUS
+===========================================================
+*/
+
+let learning=
+"Need more results";
+
+
+if(
+r.length>=20
+){
+
+const a=
+r.slice(
+0,
+10
+)
+.filter(
+x=>x.result
+)
+.length
+/
+10;
+
+
+const b=
+r.slice(
+10,
+20
+)
+.filter(
+x=>x.result
+)
+.length
+/
+10;
+
+
+if(
+a>b+.02
+){
+
+learning="Improving";
+
+}
+
+else if(
+a<b-.02
+){
+
+learning="Declining";
+
+}
+
+else{
+
+learning="Stable";
+
+}
+
+}
+
+
+$("learning")
+.textContent=
+learning;
+
+
+$("champion")
+.textContent=
+
+champion.total
+?fmtPct(
+champion.wins/
+champion.total
+)
+:"—";
+
+
+$("challenger")
+.textContent=
+
+challenger.total
+?fmtPct(
+challenger.wins/
+challenger.total
+)
+:"—";
+
+
+$("accuracyBar")
+.style.width=
+
+(
+r.length
+?Math.min(
+100,
+wins/r.length*100
+)
+:0
+)+"%";
+
+
+/*
+===========================================================
+DIAGNOSTICS
+===========================================================
+*/
+
+const e=
+ticks.length>=MIN_TICKS
+?ensemble()
+:null;
+
+
+if(e){
+
+const d=
+
+objective==="DIFFERS"
+
+?
+
+modelChoice(
+e.probs
+)
+
+:
+
+e.probs.indexOf(
+Math.max(...e.probs)
+);
+
+
+const pd=
+e.probs[d];
+
+
+const diff=
+1-pd;
+
+
+const ag=
+agreementForDigit(
+d,
+e.models
+);
+
+
+$("targetDigit")
+.textContent=
+d;
+
+
+$("diffProb")
+.textContent=
+fmtPct(diff);
+
+
+$("edge")
+.textContent=
+
+objective==="DIFFERS"
+
+?
+
+(
+(diff-.90)*100
+).toFixed(2)+" pp"
+
+:
+
+(
+(pd-.10)*100
+).toFixed(2)+" pp";
+
+
+$("agreement")
+.textContent=
+fmtPct(ag);
+
+}
+
+else{
+
+[
+"targetDigit",
+"diffProb",
+"edge",
+"agreement"
+]
+.forEach(
+id=>
+$(id).textContent="—"
+);
+
+}
+
+
+/*
+===========================================================
+CURRENT PREDICTION
+===========================================================
+*/
+
+if(
+pendingPrediction
+){
+
+$("decision")
+.textContent=
+
+pendingPrediction.action==="PREDICT"
+
+?
+
+(
+objective==="DIFFERS"
+
+?
+
+`DIFFERS ${pendingPrediction.target}`
+
+:
+
+`MATCH ${pendingPrediction.target}`
+
+)
+
+:
+
+"WAIT";
+
+
+$("decision").className=
+
+"big "
+
++
+
+(
+pendingPrediction.action==="PREDICT"
+
+?"green"
+
+:"amber"
+
+);
+
+
+$("confidence")
+.textContent=
+fmtPct(
+pendingPrediction.probability
+);
+
+
+$("reason")
+.textContent=
+pendingPrediction.reason;
+
+
+$("chips")
+.innerHTML=
+
+[
+
+`Target digit: ${pendingPrediction.target}`,
+
+`Model: ${pendingPrediction.model}`,
+
+`Agreement: ${fmtPct(pendingPrediction.agreement)}`
+
+]
+
+.map(
+x=>
+`<span class="chip">${x}</span>`
+)
+.join("");
+
+}
+
+
+renderRows();
+
+renderDistribution();
+
+}
+
+
+/*
+===========================================================
+RENDER LAST 20
+===========================================================
+*/
+
+function renderRows(){
+
+const body=
+$("rows");
+
+
+const rows=
+predictions
+.filter(
+x=>x.action==="PREDICT"
+)
+.slice(
+0,
+20
+);
+
+
+if(!rows.length){
+
+body.innerHTML=
+
+`
+<tr>
+<td colspan="7" class="small">
+
+No verified predictions yet.
+
+The engine is waiting for a statistically gated setup.
+
+</td>
+</tr>
+`;
+
+return;
+
+}
+
+
+body.innerHTML=
+
+rows.map(
+p=>{
+
+const pred=
+
+objective==="DIFFERS"
+
+?
+
+`DIFFERS ${p.target}`
+
+:
+
+`MATCH ${p.target}`;
+
+
+const res=
+
+p.resolved
+
+?
+
+(
+p.result
+?"WIN"
+:"LOSS"
+)
+
+:
+
+"PENDING";
+
+
+const cls=
+
+res==="WIN"
+
+?"win"
+
+:
+
+res==="LOSS"
+
+?"loss"
+
+:
+
+"wait";
+
+
+return `
+
+<tr>
+
+<td>
+${nowTime(p.epoch)}
+</td>
+
+<td>
+<b>${pred}</b>
+</td>
+
+<td>
+${fmtPct(p.probability)}
+</td>
+
+<td>
+${p.model}
+</td>
+
+<td>
+${p.resolved?p.actual:"—"}
+</td>
+
+<td class="${cls}">
+${res}
+</td>
+
+<td>
+${fmtPct(p.agreement)}
+</td>
+
+</tr>
+
+`;
+
+}
+)
+.join("");
+
+}
+
+
+/*
+===========================================================
+DIGIT DISTRIBUTION
+===========================================================
+*/
+
+function renderDistribution(){
+
+const a=
+windowDigits(200);
+
+
+const c=
+Array(10).fill(0);
+
+
+for(
+const d of a
+){
+
+c[d]++;
+
+}
+
+
+$("dist").innerHTML=
+
+c.map(
+(n,d)=>
+
+`
+
+<div>
+
+<span class="label">
+Digit ${d}
+</span>
+
+<b>
+${
+a.length
+?
+((n/a.length)*100).toFixed(2)
+:
+"0.00"
+}%
+</b>
+
+<div class="progress">
+
+<i
+style="width:${
+a.length
+?
+n/a.length*100
+:
+0
+}%">
+</i>
+
+</div>
+
+</div>
+
+`
+)
+.join("");
+
+}
+
+
+/*
+===========================================================
+CONNECT BUTTON
+===========================================================
+*/
+
+$("connect").onclick=
+connect;
+
+
+/*
+===========================================================
+SYMBOL CHANGE
+===========================================================
+*/
+
+$("symbol").onchange=
+async e=>{
+
+currentSymbol=
+e.target.value;
+
+
+localStorage.setItem(
+"v41_symbol",
+currentSymbol
+);
+
+
+ticks=[];
+
+predictions=[];
+
+pendingPrediction=null;
+
+lastTickAt=0;
+
+
+if(ws){
+
+try{
+
+ws.close();
+
+}catch(_){}
+
+}
+
+
+await loadSaved();
+
+connect();
+
+};
+
+
+/*
+===========================================================
+OBJECTIVE CHANGE
+===========================================================
+*/
+
+$("objective").onchange=
+e=>{
+
+objective=
+e.target.value;
+
+
+localStorage.setItem(
+"v41_objective",
+objective
+);
+
+
+pendingPrediction=null;
+
+
+renderAll();
+
+};
+
+
+/*
+===========================================================
+CLEAR DATA
+===========================================================
+*/
+
+$("clear").onclick=
+()=>{
+
+if(
+confirm(
+"Clear all locally saved V4.1 ticks and predictions?"
+)
+){
+
+clearSaved();
+
+}
+
+};
+
+
+/*
+===========================================================
+EXPORT
+===========================================================
+*/
+
+$("export").onclick=
+exportResults;
+
+
+function exportResults(){
+
+const data=
+JSON.stringify(
+
+{
+
+version:"V4.1",
+
+symbol:currentSymbol,
+
+objective,
+
+exportedAt:
+new Date().toISOString(),
+
+predictions:
+getResolved()
+
+},
+
+null,
+2
+);
+
+
+const a=
+document.createElement("a");
+
+
+a.href=
+URL.createObjectURL(
+new Blob(
+[data],
+{
+type:"application/json"
+}
+)
+);
+
+
+a.download=
+`deriv-v41-${currentSymbol}-${Date.now()}.json`;
+
+
+a.click();
+
+
+URL.revokeObjectURL(
+a.href
+);
+
+}
+
+
+/*
+===========================================================
+WATCHDOG
+===========================================================
+*/
 
 setInterval(
-    updateCountdown,
-    100
+()=>{
+
+if(
+lastTickAt &&
+Date.now()-lastTickAt>10000
+){
+
+setStatus(
+"DATA OFFLINE — NO RECENT TICKS",
+false
 );
 
-setInterval(
-    ()=>{
-        updateStats();
-    },
-    1000
+}
+
+
+renderAll();
+
+},
+1000
 );
 
-startStaleMonitor();
+
+/*
+===========================================================
+INITIALIZE
+===========================================================
+*/
+
+(async function init(){
+
+$("objective").value=
+objective;
 
 
-/* ============================================================
-   INITIALIZE
-   ============================================================ */
+$("symbol").innerHTML=
 
-(function init(){
+fallbackSymbols
+.map(
+x=>
 
-    state.selectedSymbol=
-        val("symbol");
+`<option value="${x[0]}">
+${x[1]} (${x[0]})
+</option>`
 
-    loadLocal();
+)
+.join("");
 
-    loadLearning();
 
-    renderProbabilities(
-        Array(10).fill(.1),
-        -1
-    );
+$("symbol").value=
+currentSymbol;
 
-    updateStats();
 
-    setStatus(
-        "DATA OFFLINE"
-    );
+try{
 
-    log(
-        "Deriv Prediction Lab V4 initialized.",
-        "good"
-    );
+await openDB();
 
-    log(
-        "No prediction will be generated until real Deriv ticks are available.",
-        "info"
-    );
+await loadSaved();
 
-    log(
-        "Learning is based only on verified prediction outcomes.",
-        "info"
-    );
+}
+
+catch(e){
+
+console.warn(
+"IndexedDB unavailable",
+e
+);
+
+}
+
+
+connect();
 
 })();
 
 </script>
 
 </body>
-</html>
+    </html>
